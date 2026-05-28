@@ -14,3 +14,6 @@
 ```bash
 git push origin main
 # Nanti otomatis ke detect sama Vercel
+# Di terminal lokal Anda
+git commit --allow-empty -m "fix: trigger clean build without cache"
+git push origin main
