@@ -36,7 +36,7 @@ export default function FloatingUpload({ onUpload }) {
       />
       
       <button
-        onClick={() => fileInputRef.current.click()}
+        onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
         className="floating-btn w-16 h-16 bg-red-600 hover:bg-red-700 rounded-full shadow-2xl flex items-center justify-center text-3xl font-bold transition-all hover:scale-110 disabled:opacity-50"
       >
