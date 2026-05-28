@@ -1,6 +1,6 @@
-# Inorya Storage - Telegram-Based Image Hosting
+# Zexzo Storage - Telegram-Based Image Hosting
 
-## Setup Cepat, Kontol!
+## Setup Cepat
 
 ### 1. Environment Variables (di Vercel)
 - `BOT_TOKEN`: Token bot Telegram lu
