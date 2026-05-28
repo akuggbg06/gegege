@@ -1,4 +1,4 @@
-import { getSessionFromRequest } from '@/lib/auth';
+import { getSessionFromRequest } from '../../../../lib/auth'
 import { getActiveBroadcast, saveBroadcast } from '@/lib/telegram-db';
 import { CONSTANTS } from '@/lib/constants';
 
