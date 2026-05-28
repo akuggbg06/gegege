@@ -13,13 +13,14 @@ export default function BroadcastBanner() {
         if (data.active && data.message) {
           setBroadcast(data);
         }
-      });
+      })
+      .catch(() => {});
   }, []);
 
   if (!broadcast || !visible) return null;
 
   return (
-    <div className="fixed top-16 left-0 right-0 bg-yellow-600/90 backdrop-blur-sm z-40 animate-in slide-in-from-top">
+    <div className="fixed top-16 left-0 right-0 bg-yellow-600/90 backdrop-blur-sm z-40">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <span className="text-2xl">📢</span>
