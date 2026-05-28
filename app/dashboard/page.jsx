@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import ImageCard from '@/components/ImageCard';
-import FloatingUpload from '@/components/FloatingUpload';
-import BroadcastBanner from '@/components/BroadcastBanner';
-import Navbar from '@/components/Navbar';
+import ImageCard from '../../components/ImageCard'
+import FloatingUpload from '../../components/FloatingUpload'
+import BroadcastBanner from '../../components/BroadcastBanner'
+import Navbar from '../../components/Navbar'
 
 export default function Dashboard() {
   const router = useRouter();
