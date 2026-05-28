@@ -1,0 +1,21 @@
+{
+  "name": "inorya-storage",
+  "version": "2.0.0",
+  "description": "Telegram-based image storage with Vercel frontend",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "vercel-build": "next build"
+  },
+  "dependencies": {
+    "next": "14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "axios": "^1.6.2",
+    "cookie": "^0.6.0"
+  }
+}
