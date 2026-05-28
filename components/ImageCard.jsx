@@ -19,7 +19,7 @@ export default function ImageCard({ image, onDelete }) {
       <div className="relative group">
         <img
           src={image.imageUrl}
-          alt={image.imageName}
+          alt={image.imageName || 'Foto'}
           className="w-full h-56 object-cover"
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400?text=GAGAL+LOAD' }}
         />
