@@ -1,4 +1,4 @@
-import { CONSTANTS } from '@/lib/constants';
+import { CONSTANTS } from '../../../../lib/constants'
 
 export async function POST(req) {
   const body = await req.json();
