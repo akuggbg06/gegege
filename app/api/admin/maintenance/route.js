@@ -1,6 +1,6 @@
-import { getSessionFromRequest } from '@/lib/auth';
-import { getMaintenanceStatus, setMaintenanceStatus } from '@/lib/telegram-db';
-import { CONSTANTS } from '@/lib/constants';
+import { getSessionFromRequest } from '../../../../lib/auth'
+import { getMaintenanceStatus, setMaintenanceStatus } from '../../../../lib/telegram-db'
+import { CONSTANTS } from '../../../../lib/constants'
 
 export async function GET(req) {
   const session = getSessionFromRequest(req);
