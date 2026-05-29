@@ -1,6 +1,6 @@
 import { getSessionFromRequest } from '../../../../lib/auth'
-import { getActiveBroadcast, saveBroadcast } from '@/lib/telegram-db';
-import { CONSTANTS } from '@/lib/constants';
+import { getActiveBroadcast, saveBroadcast } from '../../../../lib/telegram-db'
+import { CONSTANTS } from '../../../../lib/constants'
 
 export async function GET() {
   const broadcast = await getActiveBroadcast();
