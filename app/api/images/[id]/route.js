@@ -1,5 +1,6 @@
-import { getSessionFromRequest } from '../../../../lib/auth'
-import { deleteImageFromDB } from '../../../../lib/telegram-db'
+import { getSessionFromRequest } from '@/lib/auth'
+import { deleteImageFromDB } from '@/lib/db'
+
 export async function DELETE(req, { params }) {
   const session = getSessionFromRequest(req);
   
