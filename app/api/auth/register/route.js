@@ -1,5 +1,5 @@
-import { saveUser, getUserByUsername, getUserByEmail } from '../../../../lib/telegram-db'
-import { hashPassword, createToken } from '../../../../lib/auth'
+import { saveUser, getUserByUsername, getUserByEmail } from '@/lib/db'
+import { hashPassword, createToken } from '@/lib/auth'
 
 export async function POST(req) {
   const { username, email, password } = await req.json();
