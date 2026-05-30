@@ -1,6 +1,6 @@
 import { getSessionFromRequest } from '../../../../lib/auth'
 import { getActiveBroadcast, saveBroadcast } from '../../../../lib/telegram-db'
-import { CONSTANTS } from '../../../../lib/constants'
+const OWNER_ID = parseInt(process.env.OWNER_ID || '0');
 
 export async function GET() {
   const broadcast = await getActiveBroadcast();
