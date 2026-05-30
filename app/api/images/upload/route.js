@@ -1,6 +1,6 @@
-import { getSessionFromRequest } from '../../../../lib/auth'
-import { saveImage } from '../../../../lib/telegram-db'
-import { CONSTANTS } from '../../../../lib/constants'
+import { getSessionFromRequest } from '@/lib/auth';
+import { saveImage } from '@/lib/db';
+import { CONSTANTS } from '@/lib/constants';
 
 const TG_API = `https://api.telegram.org/bot${CONSTANTS.BOT_TOKEN}`;
 
