@@ -71,13 +71,13 @@ export default function Dashboard() {
       
       <div className="container mx-auto px-4 py-20">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Galeri Kontol Lu</h1>
+          <h1 className="text-3xl font-bold">Galeri, Bos!</h1>
           <p className="text-gray-400 mt-2">Total {images.length} foto</p>
         </div>
         
         {images.length === 0 ? (
           <div className="text-center py-20 bg-gray-900/30 rounded-xl">
-            <p className="text-gray-400">Belum ada foto, kontol! Tekan tombol + buat upload</p>
+            <p className="text-gray-400">Belum ada foto, Bos! Tekan tombol + buat upload</p>
           </div>
         ) : (
           <div className="image-grid">
