@@ -1,7 +1,7 @@
 {
-  "name": "inorya-storage",
-  "version": "2.0.0",
-  "description": "Telegram-based image storage with Vercel frontend",
+  "name": "zexzo-storage",
+  "version": "3.0.0",
+  "description": "MongoDB + Telegram Image Storage",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,7 +15,7 @@
     "react-dom": "^18.2.0",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "axios": "^1.6.2",
+    "mongodb": "^6.5.0",
     "cookie": "^0.6.0"
   }
 }
