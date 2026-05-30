@@ -1,5 +1,5 @@
-import { getSessionFromRequest } from '@/lib/auth';
-import { getActiveBroadcast, saveBroadcast } from '@/lib/db';
+import { getSessionFromRequest } from '@/lib/auth'
+import { getActiveBroadcast, saveBroadcast } from '@/lib/db'
 
 const OWNER_ID = parseInt(process.env.OWNER_ID || '0');
 
