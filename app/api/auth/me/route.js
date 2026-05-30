@@ -1,5 +1,6 @@
-import { getSessionFromRequest } from '../../../../lib/auth'
-import { getUserByUsername } from '../../../../lib/telegram-db'
+import { getSessionFromRequest } from '@/lib/auth'
+import { getUserByUsername } from '@/lib/db'
+
 export async function GET(req) {
   const session = getSessionFromRequest(req);
   
