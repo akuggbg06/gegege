@@ -1,5 +1,5 @@
-import { getSessionFromRequest } from '@/lib/auth';
-import { getMaintenanceStatus, setMaintenanceStatus } from '@/lib/db';
+import { getSessionFromRequest } from '@/lib/auth'
+import { getMaintenanceStatus, setMaintenanceStatus } from '@/lib/db'
 
 const OWNER_ID = parseInt(process.env.OWNER_ID || '0');
 
