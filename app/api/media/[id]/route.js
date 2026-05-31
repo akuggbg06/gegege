@@ -1,6 +1,9 @@
 import { verifyToken } from '@/lib/auth';
 import { deleteMedia } from '@/lib/db';
 
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
 export async function DELETE(req, { params }) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -19,6 +22,7 @@ export async function DELETE(req, { params }) {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'image';
     
+    // Panggil fungsi deleteMedia dari lib/db.js (sudah include hapus dari Telegram)
     const deleted = await deleteMedia(decoded.username, id, type);
     
     if (!deleted) {
