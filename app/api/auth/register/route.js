@@ -28,7 +28,6 @@ export async function POST(req) {
     
     const token = createToken(userId.toString(), username);
     
-    // 🔧 KIRIM TOKEN LEWAT JSON (BUKAN COOKIE)
     return Response.json({ 
       success: true, 
       token: token,
