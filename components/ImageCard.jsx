@@ -14,46 +14,48 @@ export default function ImageCard({ image, onDelete }) {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      onDelete();
+      if (onDelete) onDelete();
+      setDeleting(false);
     }
   };
 
-  const date = new Date(image.uploaded_at).toLocaleDateString('id-ID');
+  const date = image.uploaded_at ? new Date(image.uploaded_at).toLocaleDateString('id-ID') : 'Baru';
   const visibilityIcon = image.visibility === 'public' ? '🌍' : '🔒';
+  const visibilityText = image.visibility === 'public' ? 'Publik' : 'Owner Only';
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition">
-      <div className="aspect-square bg-gray-100 overflow-hidden">
+    <div className="media-card" style={{ background: 'white', borderRadius: '1.5rem', overflow: 'hidden', boxShadow: '0 12px 22px -8px rgba(0,0,0,0.08)', border: '1px solid #e2efff', cursor: 'pointer', position: 'relative' }}>
+      <div className="media-preview" style={{ aspectRatio: '1/1', background: '#f2f6fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {!imgError ? (
-          <img
-            src={image.media_url}
-            alt={image.description || 'Foto'}
-            className="w-full h-full object-cover"
+          <img 
+            src={image.media_url || image.image_url} 
+            alt={image.description || 'Foto'} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <div className="text-3xl mb-1">🖼️</div>
-              <p className="text-xs">Gagal load</p>
-            </div>
+          <div style={{ textAlign: 'center', padding: 20 }}>
+            <div style={{ fontSize: 40 }}>📸</div>
+            <p style={{ fontSize: 12, color: '#999' }}>Gagal load</p>
           </div>
         )}
       </div>
-      <div className="p-2">
-        {image.description && (
-          <p className="text-xs text-gray-500 truncate">{image.description}</p>
-        )}
-        <div className="flex justify-between items-center mt-1">
-          <span className="text-xs text-gray-400">📅 {date}</span>
-          <span className="text-xs">{visibilityIcon}</span>
+      <div className="privacy-badge" style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: 30, fontSize: '0.7rem', fontWeight: 500, color: 'white' }}>
+        {visibilityIcon} {visibilityText}
+      </div>
+      <div className="media-info" style={{ padding: '0.8rem' }}>
+        <div className="media-name" style={{ fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {image.description || (image.file_name || 'Foto')}
         </div>
-        <button
-          onClick={handleDelete}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+          <span style={{ fontSize: '0.7rem', color: '#6c757d' }}>📅 {date}</span>
+        </div>
+        <button 
+          onClick={handleDelete} 
           disabled={deleting}
-          className="w-full mt-2 text-xs text-red-500 hover:text-red-600 text-center py-1"
+          style={{ width: '100%', marginTop: 8, padding: '6px', background: '#fee2e2', border: 'none', borderRadius: 20, color: '#ef4444', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 500 }}
         >
-          {deleting ? '...' : '🗑️ Hapus'}
+          {deleting ? 'Menghapus...' : '🗑️ Hapus'}
         </button>
       </div>
     </div>
