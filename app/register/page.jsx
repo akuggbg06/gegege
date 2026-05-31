@@ -32,56 +32,105 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass-card w-full max-w-md p-8 animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-3xl font-bold text-white">Z</span>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{
+      background: 'linear-gradient(145deg, #1e4a8a 0%, #0f2b4d 100%)',
+      fontFamily: "system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif"
+    }}>
+      <div style={{
+        background: 'white',
+        width: '100%',
+        maxWidth: '400px',
+        borderRadius: '28px',
+        padding: '2.2rem 1.8rem',
+        boxShadow: '0 12px 28px rgba(0, 0, 0, 0.15)',
+        textAlign: 'center'
+      }}>
+        <div style={{ marginBottom: '1.2rem' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            background: '#2563eb',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto',
+            boxShadow: '0 4px 8px rgba(37, 99, 235, 0.2)'
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '28px', height: '28px', color: 'white' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Zexzo Storage
-          </h1>
-          <p className="text-gray-400 mt-2">Buat akun baru, Bos</p>
         </div>
         
+        <h2 style={{ fontSize: '1.6rem', fontWeight: '600', color: '#0f2b4d', marginBottom: '0.3rem' }}>Create Account</h2>
+        <div style={{ color: '#6c757d', fontSize: '0.85rem', marginBottom: '1.8rem' }}>Daftar akun baru</div>
+        
         {error && (
-          <div className="bg-red-500/20 border border-red-500 rounded-xl p-3 mb-4 text-red-400 text-sm text-center">
+          <div style={{ background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '16px', padding: '0.75rem', marginBottom: '1rem', color: '#dc2626', fontSize: '0.85rem' }}>
             {error}
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-300">Username</label>
+        <form onSubmit={handleSubmit}>
+          <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#1e3a8a', marginBottom: '0.5rem' }}>👤 Username</label>
             <input
               type="text"
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
-              className="input-modern w-full"
+              style={{
+                width: '100%',
+                padding: '0.85rem 1rem',
+                fontSize: '0.95rem',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '16px',
+                background: '#f8fafc',
+                outline: 'none',
+                fontFamily: 'inherit'
+              }}
               placeholder="Pilih username"
               required
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-300">Email</label>
+          <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#1e3a8a', marginBottom: '0.5rem' }}>📧 Email</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="input-modern w-full"
+              style={{
+                width: '100%',
+                padding: '0.85rem 1rem',
+                fontSize: '0.95rem',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '16px',
+                background: '#f8fafc',
+                outline: 'none',
+                fontFamily: 'inherit'
+              }}
               placeholder="Email aktif"
               required
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-300">Password</label>
+          <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#1e3a8a', marginBottom: '0.5rem' }}>🔒 Password</label>
             <input
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="input-modern w-full"
+              style={{
+                width: '100%',
+                padding: '0.85rem 1rem',
+                fontSize: '0.95rem',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '16px',
+                background: '#f8fafc',
+                outline: 'none',
+                fontFamily: 'inherit'
+              }}
               placeholder="Buat password"
               required
             />
@@ -90,18 +139,29 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full disabled:opacity-50"
+            style={{
+              width: '100%',
+              background: '#2563eb',
+              border: 'none',
+              padding: '0.85rem',
+              borderRadius: '16px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: 'white',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
+            }}
+            onMouseEnter={(e) => e.target.style.background = '#1d4ed8'}
+            onMouseLeave={(e) => e.target.style.background = '#2563eb'}
           >
-            {loading ? 'Loading...' : 'DAFTAR'}
+            {loading ? 'Loading...' : 'Daftar'}
           </button>
         </form>
         
-        <p className="text-center text-gray-400 mt-6 text-sm">
-          Udah punya akun?{' '}
-          <Link href="/login" className="text-purple-400 hover:text-purple-300 transition">
-            Login di sini
-          </Link>
-        </p>
+        <div style={{ marginTop: '1.5rem', fontSize: '0.7rem', color: '#94a3b8', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+          Sudah punya akun? <Link href="/login" style={{ color: '#2563eb', textDecoration: 'none' }}>Login di sini</Link>
+        </div>
       </div>
     </div>
   );
