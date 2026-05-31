@@ -4,7 +4,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 const WEB_URL = process.env.WEB_URL || 'https://zexzo-simpanfoto.vercel.app';
 
-// ============ FUNGSI DATABASE VIA API ============
+// ============ FUNGSI PANGGIL API ============
 async function callApi(endpoint, method = 'GET', body = null) {
   const options = {
     method,
@@ -19,13 +19,13 @@ async function callApi(endpoint, method = 'GET', body = null) {
 bot.command('start', async (ctx) => {
   const userId = ctx.from.id;
   if (userId === OWNER_ID) {
-    await ctx.reply(`✅ Bot aktif, Bos!\n\n📋 *Daftar Command Owner:*\n/listuser - Lihat semua user\n/delfoto [link] - Hapus foto dari link\n/mt - Maintenance ON\n/offmt - Maintenance OFF\n/bc [pesan] - Broadcast ke semua user\n/backup - Backup database\n\n📱 *Website:* ${WEB_URL}`, { parse_mode: 'Markdown' });
+    await ctx.reply(`✅ Bot aktif, Bos!\n\n📋 *Daftar Command Owner:*\n/listuser - Lihat semua user\n/delfoto [link] - Hapus foto dari link\n/mt - Maintenance ON (tampil di web)\n/offmt - Maintenance OFF\n/bc [pesan] - Broadcast di web\n/backup - Backup database\n\n📱 *Website:* ${WEB_URL}`, { parse_mode: 'Markdown' });
   } else {
     await ctx.reply(`✅ Bot aktif!\n\nKirim foto/video ke bot ini, nanti akan diteruskan ke owner.\n\n📱 *Website:* ${WEB_URL}`, { parse_mode: 'Markdown' });
   }
 });
 
-// ============ /listuser - Lihat semua user ============
+// ============ /listuser ============
 bot.command('listuser', async (ctx) => {
   if (ctx.from.id !== OWNER_ID) return ctx.reply('❌ Command ini hanya untuk owner!');
   
@@ -50,7 +50,7 @@ bot.command('listuser', async (ctx) => {
   }
 });
 
-// ============ /delfoto [link] - Hapus foto ============
+// ============ /delfoto ============
 bot.command('delfoto', async (ctx) => {
   if (ctx.from.id !== OWNER_ID) return ctx.reply('❌ Command ini hanya untuk owner!');
   
@@ -79,12 +79,12 @@ bot.command('delfoto', async (ctx) => {
   }
 });
 
-// ============ /mt - Maintenance ON ============
+// ============ /mt - Maintenance ON (TAMPIL DI WEB) ============
 bot.command('mt', async (ctx) => {
   if (ctx.from.id !== OWNER_ID) return ctx.reply('❌ Command ini hanya untuk owner!');
   
   await callApi('maintenance', 'POST', { active: true });
-  ctx.reply('🔧 *MAINTENANCE MODE AKTIF*\n\nWebsite tidak bisa diakses sementara!\n\nGunakan /offmt untuk menonaktifkan.', { parse_mode: 'Markdown' });
+  ctx.reply('🔧 *MAINTENANCE MODE AKTIF*\n\nWebsite akan menampilkan halaman maintenance!\n\nGunakan /offmt untuk menonaktifkan.', { parse_mode: 'Markdown' });
 });
 
 // ============ /offmt - Maintenance OFF ============
@@ -95,21 +95,21 @@ bot.command('offmt', async (ctx) => {
   ctx.reply('✅ *MAINTENANCE MODE NONAKTIF*\n\nWebsite sudah bisa diakses kembali!', { parse_mode: 'Markdown' });
 });
 
-// ============ /bc [pesan] - Broadcast ============
+// ============ /bc - BROADCAST DI WEB (BUKAN TELEGRAM) ============
 bot.command('bc', async (ctx) => {
   if (ctx.from.id !== OWNER_ID) return ctx.reply('❌ Command ini hanya untuk owner!');
   
   const message = ctx.message.text.replace('/bc ', '').trim();
   if (!message) {
-    return ctx.reply('⚠️ Format: /bc [pesan broadcast]');
+    return ctx.reply('⚠️ Format: /bc [pesan broadcast]\n\nContoh: /bc Website sedang maintenance malam ini');
   }
   
-  await ctx.reply(`📢 *Mengirim broadcast...*\n\nPesan: ${message}`, { parse_mode: 'Markdown' });
+  await ctx.reply(`📢 *Mengirim broadcast ke web...*\n\nPesan: ${message}`, { parse_mode: 'Markdown' });
   
   try {
     const result = await callApi('broadcast', 'POST', { message });
     if (result.success) {
-      ctx.reply(`✅ Broadcast berhasil dikirim!\n\n📢 *Pesan:* ${message}`, { parse_mode: 'Markdown' });
+      ctx.reply(`✅ Broadcast berhasil dikirim ke web!\n\n📢 *Pesan akan muncul di dashboard user:*\n${message}`, { parse_mode: 'Markdown' });
     } else {
       ctx.reply('❌ Gagal mengirim broadcast!');
     }
