@@ -1,4 +1,5 @@
 import { getCollection } from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function POST(req) {
   const { message } = await req.json();
@@ -25,6 +26,10 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const username = searchParams.get('username');
   
+  if (!username) {
+    return Response.json({ message: null, active: false });
+  }
+  
   const broadcasts = await getCollection('broadcasts');
   const active = await broadcasts.findOne({ is_active: true });
   
@@ -45,12 +50,17 @@ export async function GET(req) {
 
 export async function PUT(req) {
   const { broadcastId, username } = await req.json();
+  
+  if (!broadcastId || !username) {
+    return Response.json({ success: false, error: 'Missing broadcastId or username' });
+  }
+  
   const broadcasts = await getCollection('broadcasts');
   
-  await broadcasts.updateOne(
+  const result = await broadcasts.updateOne(
     { _id: new ObjectId(broadcastId), is_active: true },
     { $addToSet: { shown_to: username } }
   );
   
-  return Response.json({ success: true });
+  return Response.json({ success: result.modifiedCount > 0 });
 }
