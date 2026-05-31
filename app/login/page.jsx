@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Login() {
-  const router = useRouter();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,20 +13,27 @@ export default function Login() {
     setLoading(true);
     setError('');
     
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    });
-    
-    const data = await res.json();
-    
-    if (res.ok) {
-      router.push('/dashboard');
-    } else {
-      setError(data.error || 'Login gagal, Bos!');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        // 🔧 PAKAI WINDOW.LOCATION, BOS!
+        window.location.href = '/dashboard';
+      } else {
+        setError(data.error || 'Login gagal, Bos!');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Terjadi kesalahan, coba lagi nanti, Bos!');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -41,7 +46,6 @@ export default function Login() {
       padding: '20px',
       overflow: 'hidden'
     }}>
-      {/* VIDEO BACKGROUND */}
       <video
         autoPlay
         loop
@@ -58,11 +62,8 @@ export default function Login() {
         }}
       >
         <source src="https://files.catbox.moe/t4osuc.mp4" type="video/mp4" />
-        {/* Fallback kalo video gak bisa load */}
-        Your browser does not support the video tag.
       </video>
       
-      {/* OVERLAY GELAP BIAR TEXT KELIHATAN */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -73,7 +74,6 @@ export default function Login() {
         zIndex: 1
       }} />
       
-      {/* CARD LOGIN - TRANSPARAN! */}
       <div style={{
         position: 'relative',
         zIndex: 2,
@@ -131,7 +131,6 @@ export default function Login() {
                 fontFamily: 'inherit'
               }}
               placeholder="Masukkan username"
-              placeholderTextColor="rgba(255,255,255,0.5)"
               required
             />
           </div>
@@ -174,12 +173,8 @@ export default function Login() {
               fontFamily: 'inherit',
               transition: 'all 0.2s'
             }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
+            onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+            onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
           >
             {loading ? 'Loading...' : 'Login'}
           </button>
