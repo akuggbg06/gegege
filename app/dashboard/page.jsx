@@ -19,35 +19,56 @@ export default function Dashboard() {
   }, []);
 
   const checkAuth = async () => {
-    const res = await fetch('/api/auth/me');
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    
+    const res = await fetch('/api/auth/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
     if (!res.ok) {
+      localStorage.removeItem('token');
       router.push('/login');
     } else {
       const data = await res.json();
       setUser(data.user);
+      setLoading(false);
     }
   };
 
   const loadImages = async () => {
     try {
-      const res = await fetch('/api/images');
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/images', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setImages(data);
       }
     } catch (error) {
       console.error('Gagal load gambar:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleUpload = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
+    const token = localStorage.getItem('token');
     const res = await fetch('/api/images/upload', {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
     });
     if (res.ok) {
       await loadImages();
@@ -55,7 +76,13 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (imageId) => {
-    const res = await fetch(`/api/images/${imageId}`, { method: 'DELETE' });
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/images/${imageId}`, { 
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     if (res.ok) {
       setImages((prevImages) => prevImages.filter((img) => img._id !== imageId && img.id !== imageId));
     }
@@ -99,7 +126,7 @@ export default function Dashboard() {
       
       <footer className="text-center py-6 mt-8 border-t border-gray-800">
         <p className="text-xs text-gray-500">
-          Copyright © Ai DeepSeek
+          Copyright © BinCoderr
         </p>
       </footer>
     </>
