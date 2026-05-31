@@ -9,7 +9,7 @@ export default function VideoCard({ video, onDelete }) {
     if (confirm(`Yakin mau hapus video ini, Bos?`)) {
       setDeleting(true);
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/media/${video._id || video.id}`, { 
+      const res = await fetch(`/api/media/${video._id || video.id}?type=video`, { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
