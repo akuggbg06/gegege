@@ -17,7 +17,6 @@ export default function Dashboard() {
   const [uploadPrivacy, setUploadPrivacy] = useState('public');
   const [uploading, setUploading] = useState(false);
 
-  // Cek auth dan load media
   useEffect(() => {
     checkAuth();
     loadMedia();
@@ -136,8 +135,7 @@ export default function Dashboard() {
     if (currentFilter === 'video') filtered = filtered.filter(m => m.type === 'video');
     if (currentFilter === 'public') filtered = filtered.filter(m => m.visibility === 'public');
     if (currentFilter === 'owner') {
-      // Owner only: hanya tampil kalo user adalah owner
-      if (user?.username === 'UdudEnak' || user?.role === 'owner') {
+      if (isOwner) {
         filtered = filtered.filter(m => m.visibility === 'owner');
       } else {
         filtered = [];
@@ -153,8 +151,20 @@ export default function Dashboard() {
     owner: mediaItems.filter(m => m.visibility === 'owner').length
   };
 
-  // Cek apakah user adalah owner (bisa lihat owner only)
-  const isOwner = user?.username === 'UdudEnak' || user?.role === 'owner';
+  const isOwner = user?.username === 'UdudEnak';
+
+  // Empty state messages berdasarkan filter
+  const getEmptyMessage = () => {
+    switch (currentFilter) {
+      case 'photo': return { icon: '📸', title: 'Belum ada foto', text: 'Klik tombol + untuk upload foto' };
+      case 'video': return { icon: '🎬', title: 'Belum ada video', text: 'Klik tombol + untuk upload video' };
+      case 'public': return { icon: '🌍', title: 'Belum ada media publik', text: 'Upload media dengan status publik' };
+      case 'owner': return { icon: '🔒', title: 'Belum ada owner only', text: 'Upload media dengan status owner only' };
+      default: return { icon: '📭', title: 'Belum ada media', text: 'Klik tombol + untuk upload foto atau video' };
+    }
+  };
+
+  const emptyMsg = getEmptyMessage();
 
   if (loading) {
     return (
@@ -198,7 +208,9 @@ export default function Dashboard() {
         .delete-btn { width: 100%; padding: 6px; background: #fee2e2; border: none; border-radius: 20px; color: #ef4444; font-size: 0.7rem; cursor: pointer; font-weight: 500; transition: 0.2s; }
         .delete-btn:hover { background: #fecaca; }
         .empty-state { text-align: center; padding: 3rem 1rem; background: #ffffffb3; border-radius: 2rem; border: 1px dashed #73a9ff; }
-        .empty-icon { font-size: 4rem; color: #6c9eff; margin-bottom: 1rem; }
+        .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .empty-title { font-size: 1.2rem; font-weight: 600; color: #0f2b3d; margin-bottom: 0.5rem; }
+        .empty-text { color: #6c757d; font-size: 0.85rem; }
         .floating-upload { position: fixed; bottom: 2rem; right: 2rem; background: #1f4fdb; color: white; width: 64px; height: 64px; border-radius: 40px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 12px 25px #1e4bd280; cursor: pointer; border: none; z-index: 20; transition: 0.2s; }
         .floating-upload:hover { background: #0a3a9e; transform: scale(1.05); }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: all 0.2s; }
@@ -207,7 +219,7 @@ export default function Dashboard() {
         .modal-content h3 { font-size: 1.6rem; font-weight: 600; margin-bottom: 1rem; }
         .form-group { margin: 1rem 0; }
         .form-group label { font-weight: 600; display: block; margin-bottom: 0.3rem; }
-        input, select { width: 100%; padding: 0.8rem; border-radius: 1.2rem; border: 1px solid #cbd5e1; font-family: inherit; }
+        input, select { width: 100%; padding: 0.8rem; borderRadius: '1.2rem', border: '1px solid #cbd5e1', fontFamily: 'inherit' }
         .radio-group { display: flex; gap: 1rem; margin-top: 0.4rem; }
         .preview-image { width: 100%; border-radius: 1rem; margin-top: 0.5rem; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
@@ -245,9 +257,9 @@ export default function Dashboard() {
 
         {filteredMedia().length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📭</div>
-            <h3>Belum ada media</h3>
-            <p>Klik tombol + untuk upload foto atau video</p>
+            <div className="empty-icon">{emptyMsg.icon}</div>
+            <div className="empty-title">{emptyMsg.title}</div>
+            <div className="empty-text">{emptyMsg.text}</div>
           </div>
         ) : (
           <div className="media-grid">
