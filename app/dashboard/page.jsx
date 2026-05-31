@@ -17,8 +17,9 @@ export default function Dashboard() {
   const [uploadPrivacy, setUploadPrivacy] = useState('public');
   const [uploading, setUploading] = useState(false);
 
-  // AMAN: Username owner diambil dari environment variable, GAK keliatan di GitHub!
-  const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || '';
+  // DEFAULT VALUE - GA PERLU ENVIRONMENT VARIABLE!
+  const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
+  const appName = 'Zexzo Storage';  // ← LANGSUNG DI SET, GA PAKE ENV
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -114,7 +115,6 @@ export default function Dashboard() {
     }
   };
 
-  // AMAN: Perbandingan username pake variable dari env, GAK hardcode!
   const isOwnerUser = user?.username === ownerUsername;
 
   const filteredMedia = () => {
@@ -156,7 +156,7 @@ export default function Dashboard() {
       case 'video': return { icon: '🎬', title: 'Belum ada video', text: 'Klik tombol + untuk upload video' };
       case 'public': return { icon: '🌍', title: 'Belum ada media publik', text: 'Upload media dengan status publik' };
       case 'private': return { icon: '🔒', title: 'Belum ada media pribadi', text: 'Upload media dengan status pribadi' };
-      case 'owner': return { icon: '👑', title: 'Belum ada kiriman', text: 'User bisa kirim media ke owner' };
+      case 'owner': return { icon: '👑', title: 'Belum ada kiriman', text: 'Kiriman dari user akan muncul di sini' };
       default: return { icon: '📭', title: 'Belum ada media', text: 'Klik tombol + untuk upload foto atau video' };
     }
   };
@@ -229,7 +229,7 @@ export default function Dashboard() {
 
       <div className="app-container">
         <div className="header-flex">
-          <div className="logo-area"><h1>{APP_NAME} <span>✨ v2.0</span></h1></div>
+          <div className="logo-area"><h1>{appName} <span>✨ v2.0</span></h1></div>
           <div className="user-panel">
             <div className="user-greeting"><i className="fas fa-user-astronaut"></i> {user?.username}</div>
             <button className="logout-btn" onClick={() => { localStorage.removeItem('token'); router.push('/login'); }}>Logout</button>
@@ -288,7 +288,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-        <footer><i className="fas fa-database"></i> {APP_NAME} — aman & modern</footer>
+        <footer><i className="fas fa-database"></i> {appName} — aman & modern</footer>
       </div>
 
       <button className="floating-upload" onClick={() => setModalOpen(true)}>+</button>
