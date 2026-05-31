@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageCard from '@/components/ImageCard';
@@ -30,7 +31,6 @@ export default function Dashboard() {
       if (res.ok) { const data = await res.json(); setImages(data.images || []); setVideos(data.videos || []); }
     } catch (error) { console.error(error); }
   };
-  const handleUploadComplete = () => loadMedia();
   const allMedia = [...images, ...videos];
   const filtered = () => {
     if (activeTab === 'all') return allMedia;
@@ -42,38 +42,39 @@ export default function Dashboard() {
   };
   const stats = { photos: images.length, videos: videos.length, public: allMedia.filter(m => m.visibility === 'public').length, owner: allMedia.filter(m => m.visibility === 'owner').length };
   
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div>;
-  
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#f3f4f6' }}><div style={{ border: '4px solid #3b82f6', borderTopColor: 'transparent', borderRadius: '50%', width: 40, height: 40, animation: 'spin 1s linear infinite' }}></div><style>{'@keyframes spin { to { transform: rotate(360deg); } }'}</style></div>;
+
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-blue-900/20"></div>
-      <div className="relative z-10">
-        <Navbar user={user} />
-        <div className="max-w-7xl mx-auto px-4 pt-24 pb-12">
-          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 mb-8 border border-white/20">
-            <h1 className="text-3xl font-bold text-white">Welcome back, {user?.username} ✨</h1>
-            <p className="text-white/60 mt-1">Kelola media kamu dengan gaya</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            <div className="backdrop-blur-xl bg-white/10 rounded-xl p-4 border border-white/20 text-center"><div className="text-2xl">📸</div><div className="text-2xl font-bold text-white">{stats.photos}</div><div className="text-xs text-white/60">Foto</div></div>
-            <div className="backdrop-blur-xl bg-white/10 rounded-xl p-4 border border-white/20 text-center"><div className="text-2xl">🎬</div><div className="text-2xl font-bold text-white">{stats.videos}</div><div className="text-xs text-white/60">Video</div></div>
-            <div className="backdrop-blur-xl bg-white/10 rounded-xl p-4 border border-white/20 text-center"><div className="text-2xl">🌍</div><div className="text-2xl font-bold text-white">{stats.public}</div><div className="text-xs text-white/60">Publik</div></div>
-            <div className="backdrop-blur-xl bg-white/10 rounded-xl p-4 border border-white/20 text-center"><div className="text-2xl">🔒</div><div className="text-2xl font-bold text-white">{stats.owner}</div><div className="text-xs text-white/60">Owner</div></div>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {['all','photos','videos','public','owner'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-2 rounded-full font-medium backdrop-blur-xl transition ${activeTab === tab ? 'bg-white text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}>{tab === 'all' ? 'Semua' : tab}</button>
-            ))}
-          </div>
-          {filtered().length === 0 ? (
-            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-12 text-center border border-white/20"><div className="text-6xl mb-3">📭</div><p className="text-white/60">Belum ada media</p></div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">{filtered().map(item => item.type === 'video' ? <VideoCard key={item.id} video={item} onDelete={loadMedia} /> : <ImageCard key={item.id} image={item} onDelete={loadMedia} />)}</div>
-          )}
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
+      <Navbar user={user} />
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 16px 32px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 'bold', color: '#111827' }}>Selamat datang, {user?.username}!</h1>
+          <p style={{ color: '#6b7280', marginTop: 4 }}>Kelola semua foto dan video kamu di sini</p>
         </div>
-        <button onClick={() => setIsUploadModalOpen(true)} className="fixed bottom-6 right-6 w-14 h-14 bg-white text-black rounded-full shadow-2xl flex items-center justify-center text-2xl font-bold hover:scale-110 transition">+</button>
-        <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} onUploadComplete={handleUploadComplete} />
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 32 }}>
+          <div style={{ backgroundColor: 'white', borderRadius: 12, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 8 }}>📸</div><div style={{ fontSize: 28, fontWeight: 'bold', color: '#111827' }}>{stats.photos}</div><div style={{ fontSize: 12, color: '#6b7280' }}>Total Foto</div></div>
+          <div style={{ backgroundColor: 'white', borderRadius: 12, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 8 }}>🎬</div><div style={{ fontSize: 28, fontWeight: 'bold', color: '#111827' }}>{stats.videos}</div><div style={{ fontSize: 12, color: '#6b7280' }}>Total Video</div></div>
+          <div style={{ backgroundColor: 'white', borderRadius: 12, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 8 }}>🌍</div><div style={{ fontSize: 28, fontWeight: 'bold', color: '#111827' }}>{stats.public}</div><div style={{ fontSize: 12, color: '#6b7280' }}>Publik</div></div>
+          <div style={{ backgroundColor: 'white', borderRadius: 12, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 8 }}>🔒</div><div style={{ fontSize: 28, fontWeight: 'bold', color: '#111827' }}>{stats.owner}</div><div style={{ fontSize: 12, color: '#6b7280' }}>Owner Only</div></div>
+        </div>
+        
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>
+          {['all','photos','videos','public','owner'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '8px 16px', borderRadius: 8, fontWeight: 500, backgroundColor: activeTab === tab ? '#3b82f6' : 'transparent', color: activeTab === tab ? 'white' : '#6b7280', border: 'none', cursor: 'pointer' }}>{tab === 'all' ? 'Semua' : tab}</button>
+          ))}
+        </div>
+        
+        {filtered().length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 64, backgroundColor: 'white', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}><div style={{ fontSize: 48, marginBottom: 16 }}>📭</div><p style={{ color: '#6b7280' }}>Belum ada media</p><p style={{ color: '#9ca3af', fontSize: 14, marginTop: 8 }}>Klik tombol + untuk upload foto atau video</p></div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>{filtered().map(item => item.type === 'video' ? <VideoCard key={item._id || item.id} video={item} onDelete={loadMedia} /> : <ImageCard key={item._id || item.id} image={item} onDelete={loadMedia} />)}</div>
+        )}
       </div>
+      
+      <button onClick={() => setIsUploadModalOpen(true)} style={{ position: 'fixed', bottom: 24, right: 24, width: 56, height: 56, backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: 999, fontSize: 24, fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>+</button>
+      <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} onUploadComplete={loadMedia} />
     </div>
   );
 }
