@@ -22,14 +22,14 @@ export async function POST(req) {
     
     const token = createToken(user._id.toString(), username);
     
-    // Buat response dengan cookie manual
+    // 🔧 PERBAIKAN: Set cookie dengan cara yang lebih kompatibel
     const response = new Response(
       JSON.stringify({ success: true, user: { username: user.username, email: user.email } }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
+          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Secure=${process.env.NODE_ENV === 'production'}`
         }
       }
     );
