@@ -22,19 +22,12 @@ export async function POST(req) {
     
     const token = createToken(user._id.toString(), username);
     
-    // 🔧 PERBAIKAN UNTUK HTTPS: Secure flag WAJIB true, SameSite = None
-    const response = new Response(
-      JSON.stringify({ success: true, user: { username: user.username, email: user.email } }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Set-Cookie': `token=${token}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${7 * 24 * 60 * 60}`
-        }
-      }
-    );
-    
-    return response;
+    // 🔧 KIRIM TOKEN LEWAT JSON (BUKAN COOKIE)
+    return Response.json({ 
+      success: true, 
+      token: token,
+      user: { username: user.username, email: user.email } 
+    });
   } catch (error) {
     console.error('Login error:', error);
     return Response.json({ error: 'Terjadi kesalahan, coba lagi nanti, Bos!' }, { status: 500 });
