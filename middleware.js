@@ -7,18 +7,14 @@ export async function middleware(request) {
   const publicPaths = ['/login', '/register'];
   const isPublicPath = publicPaths.includes(pathname);
   
-  // Ambil cookie dari header (SameSite=None tetap bisa terbaca)
-  const cookieHeader = request.headers.get('cookie') || '';
-  const hasToken = cookieHeader.includes('token=');
+  // Ambil token dari localStorage TIDAK BISA di middleware
+  // Jadi middleware kita skip dulu, handle auth di frontend aja
   
-  // Redirect ke login kalo belum login dan bukan public path
-  if (!isPublicPath && !hasToken) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-  
-  // Redirect ke dashboard kalo udah login dan buka login/register
-  if (isPublicPath && hasToken) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  // Kalo bukan public path, biarkan akses dulu
+  // Nanti dashboard yang handle cek token
+  if (!isPublicPath) {
+    // Jangan redirect dulu, biarkan akses
+    return NextResponse.next();
   }
   
   return NextResponse.next();
