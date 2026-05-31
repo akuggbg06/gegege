@@ -25,13 +25,14 @@ export default function Dashboard() {
   const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
   const appName = 'Zexzo Storage';
 
-  // Cek auth
+  // ============ CEK AUTH & LOAD MEDIA ============
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
       return;
     }
+    
     fetch('/api/auth/me', {
       headers: { 'Authorization': `Bearer ${token}` }
     }).then(res => {
@@ -42,6 +43,7 @@ export default function Dashboard() {
         res.json().then(data => setUser(data.user));
       }
     });
+    
     loadMedia();
   }, []);
 
