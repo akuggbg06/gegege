@@ -3,22 +3,25 @@ import { NextResponse } from 'next/server';
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   
-  // IZINKAN SEMUA API BOT (biar broadcast bisa diakses tanpa login)
-  if (pathname.startsWith('/api/bot/')) {
+  // IZINKAN SEMUA API (biar broadcast, maintenance, dll bisa jalan)
+  if (pathname.startsWith('/api/')) {
     return NextResponse.next();
   }
   
-  // Skip buat api lainnya, maintenance page, dan asset static
-  if (pathname.startsWith('/api/') || 
-      pathname === '/maintenance' ||
-      pathname.startsWith('/_next/') ||
-      pathname.startsWith('/favicon.ico')) {
+  // IZINKAN asset static
+  if (pathname.startsWith('/_next/') || pathname.startsWith('/favicon.ico')) {
     return NextResponse.next();
   }
   
-  // Cek maintenance mode dari API
+  // IZINKAN halaman maintenance itu sendiri
+  if (pathname === '/maintenance') {
+    return NextResponse.next();
+  }
+  
+  // ============ CEK MAINTENANCE MODE ============
   let isMaintenance = false;
   try {
+    // Panggil API maintenance
     const url = new URL('/api/bot/maintenance', request.url);
     const res = await fetch(url.toString(), {
       headers: { 'Content-Type': 'application/json' }
@@ -31,25 +34,14 @@ export async function middleware(request) {
     console.error('Gagal cek maintenance:', error);
   }
   
-  // Redirect ke halaman maintenance kalo mode aktif
+  // KALO MAINTENANCE AKTIF, REDIRECT KE HALAMAN MAINTENANCE
   if (isMaintenance && pathname !== '/maintenance') {
     return NextResponse.redirect(new URL('/maintenance', request.url));
   }
   
-  // ============ AUTH CHECK ============
-  const publicPaths = ['/login', '/register', '/maintenance'];
-  const isPublicPath = publicPaths.includes(pathname);
-  
-  const cookieHeader = request.headers.get('cookie') || '';
-  const hasToken = cookieHeader.includes('token=');
-  
-  if (!isPublicPath && !hasToken) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-  
-  if (isPublicPath && hasToken && pathname !== '/maintenance') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
+  // ============ AUTH CHECK (ONLINE SEMUA) ============
+  // Biarin semua halaman bisa diakses dulu kalo maintenance OFF
+  // Nanti dashboard yang handle redirect ke login kalo gak ada token
   
   return NextResponse.next();
 }
