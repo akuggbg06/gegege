@@ -23,13 +23,12 @@ export async function POST(req) {
     const file = formData.get('file');
     const description = formData.get('description') || '';
     const visibility = formData.get('visibility') || 'public';
-    const type = formData.get('type') || 'image';
-    
+
     if (!file) {
       return Response.json({ error: 'Upload file dulu, Bos!' }, { status: 400 });
     }
     
-    // Upload ke Telegram
+    // 1. Upload foto ke grup Telegram
     const buffer = Buffer.from(await file.arrayBuffer());
     const blob = new Blob([buffer], { type: file.type });
     
@@ -37,31 +36,43 @@ export async function POST(req) {
     uploadForm.append('chat_id', STORAGE_GROUP_ID);
     uploadForm.append('photo', blob, file.name);
     
-    const response = await fetch(`${TG_API}/sendPhoto`, {
+    const sendPhotoRes = await fetch(`${TG_API}/sendPhoto`, {
       method: 'POST',
       body: uploadForm
     });
     
-    const result = await response.json();
+    const sendPhotoResult = await sendPhotoRes.json();
     
-    if (!result.ok) {
-      console.error('Telegram API error:', result);
+    if (!sendPhotoResult.ok) {
+      console.error('Telegram API error:', sendPhotoResult);
       return Response.json({ error: 'Gagal upload ke Telegram, Bos!' }, { status: 500 });
     }
     
-    const messageId = result.result.message_id;
-    const fileId = result.result.photo[result.result.photo.length - 1].file_id;
-    const imageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileId}`;
+    // 2. Dapatkan file_id dari foto yang baru diupload
+    const fileId = sendPhotoResult.result.photo[sendPhotoResult.result.photo.length - 1].file_id;
     
-    // Simpan ke MongoDB
+    // 3. Minta path download file yang benar dari Telegram
+    const getFileRes = await fetch(`${TG_API}/getFile?file_id=${fileId}`);
+    const getFileResult = await getFileRes.json();
+    
+    if (!getFileResult.ok) {
+      console.error('Gagal mendapat file path:', getFileResult);
+      return Response.json({ error: 'Gagal memproses file, coba lagi.' }, { status: 500 });
+    }
+    
+    // 4. Buat URL download yang benar
+    const filePath = getFileResult.result.file_path;
+    const correctImageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+    
+    // 5. Simpan URL yang benar ke database
     const images = await getCollection('images');
     await images.insertOne({
       username: decoded.username,
       user_id: decoded.userId,
-      image_url: imageUrl,
-      media_url: imageUrl,
+      image_url: correctImageUrl,
+      media_url: correctImageUrl,
       file_id: fileId,
-      telegram_message_id: messageId,
+      telegram_message_id: sendPhotoResult.result.message_id,
       description: description,
       visibility: visibility,
       type: 'image',
@@ -69,7 +80,7 @@ export async function POST(req) {
       is_deleted: false
     });
     
-    return Response.json({ success: true, imageUrl, messageId });
+    return Response.json({ success: true, imageUrl: correctImageUrl });
   } catch (error) {
     console.error('Upload error:', error);
     return Response.json({ error: 'Terjadi kesalahan, Bos!' }, { status: 500 });
