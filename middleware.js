@@ -7,7 +7,7 @@ export async function middleware(request) {
   const publicPaths = ['/login', '/register'];
   const isPublicPath = publicPaths.includes(pathname);
   
-  // Ambil cookie dari header
+  // Ambil cookie dari header (SameSite=None tetap bisa terbaca)
   const cookieHeader = request.headers.get('cookie') || '';
   const hasToken = cookieHeader.includes('token=');
   
