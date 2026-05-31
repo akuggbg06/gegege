@@ -3,7 +3,7 @@ import { saveMedia } from '@/lib/db';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const STORAGE_GROUP_ID = process.env.STORAGE_GROUP_ID;
-const OWNER_ID = process.env.OWNER_ID; // ID Telegram BOS buat pribadi
+const PRIVATE_GROUP_ID = process.env.PRIVATE_GROUP_ID; // GRUP PRIVATE
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 export async function POST(req) {
@@ -37,18 +37,21 @@ export async function POST(req) {
     
     // TENTUKAN TUJUAN PENGIRIMAN
     let targetChatId;
+    let visibilityLabel;
     if (visibility === 'private') {
-      // PRIVATE: kirim ke chat pribadi BOS
-      targetChatId = OWNER_ID;
-      uploadForm.append('chat_id', OWNER_ID);
+      // PRIVATE: kirim ke grup PRIVATE
+      targetChatId = PRIVATE_GROUP_ID;
+      visibilityLabel = '🔒 Pribadi';
     } else {
       // PUBLIC: kirim ke grup storage
       targetChatId = STORAGE_GROUP_ID;
-      uploadForm.append('chat_id', STORAGE_GROUP_ID);
+      visibilityLabel = '🌍 Publik';
     }
     
+    uploadForm.append('chat_id', targetChatId);
+    
     // Buat caption yang informatif
-    const caption = `📸 *Upload oleh:* @${decoded.username}\n📝 *Deskripsi:* ${description || '-'}\n🔒 *Visibilitas:* ${visibility === 'public' ? '🌍 Publik' : '🔒 Pribadi (Owner Only)'}\n📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}`;
+    const caption = `📸 *Upload oleh:* @${decoded.username}\n📝 *Deskripsi:* ${description || '-'}\n🔒 *Visibilitas:* ${visibilityLabel}\n📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}`;
     uploadForm.append('caption', caption);
     uploadForm.append('parse_mode', 'Markdown');
     
