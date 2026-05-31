@@ -93,7 +93,6 @@ export default function Dashboard() {
       <BroadcastBanner />
       
       <div className="container mx-auto px-4 pt-24 pb-12">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
             Zexzo Storage
@@ -101,7 +100,6 @@ export default function Dashboard() {
           <p className="text-gray-400 mt-2">Kelola foto dan video kamu dengan mudah</p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 text-center border border-white/20">
             <div className="text-3xl mb-1">📸</div>
@@ -125,7 +123,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
           {[
             { id: 'semua', icon: '🎯', label: 'Semua' },
@@ -148,7 +145,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Media Grid */}
         {filteredMedia().length === 0 ? (
           <div className="text-center py-20 bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10">
             <div className="text-6xl mb-4">📭</div>
@@ -168,7 +164,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Floating Upload Button */}
       <button
         onClick={() => setIsUploadModalOpen(true)}
         className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-2xl flex items-center justify-center text-3xl font-bold text-white hover:scale-110 transition-all duration-300 z-50 hover:shadow-purple-500/50"
@@ -176,7 +171,6 @@ export default function Dashboard() {
         +
       </button>
 
-      {/* Upload Modal */}
       <UploadModal 
         isOpen={isUploadModalOpen} 
         onClose={() => setIsUploadModalOpen(false)}
