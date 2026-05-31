@@ -21,6 +21,10 @@ export default function Dashboard() {
   const [broadcast, setBroadcast] = useState(null);
   const [showBroadcast, setShowBroadcast] = useState(false);
 
+  // ============ POPUP FOTO STATE ============
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImagePopup, setShowImagePopup] = useState(false);
+
   // Ambil dari environment variable (AMAN)
   const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
   const appName = 'Zexzo Storage';
@@ -86,25 +90,22 @@ export default function Dashboard() {
   };
 
   const loadMedia = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/media', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      console.log('Media loaded:', data); // Debugging
-      const allMedia = [...(data.images || []), ...(data.videos || [])];
-      setMediaItems(allMedia);
-    } else {
-      console.error('Gagal load media, status:', res.status);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/media', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const allMedia = [...(data.images || []), ...(data.videos || [])];
+        setMediaItems(allMedia);
+      }
+    } catch (error) {
+      console.error('Gagal load media:', error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Gagal load media:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -153,14 +154,26 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id, type) => {
-    if (confirm('Hapus media ini?')) {
+    if (confirm('Hapus media ini? Media juga akan dihapus dari grup Telegram!')) {
       const token = localStorage.getItem('token');
-      await fetch(`/api/media/${id}?type=${type}`, {
+      const res = await fetch(`/api/media/${id}?type=${type}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      loadMedia();
+      if (res.ok) {
+        loadMedia();
+      }
     }
+  };
+
+  const openImagePopup = (imageUrl, description, username, uploadedAt) => {
+    setSelectedImage({ url: imageUrl, description, username, uploadedAt });
+    setShowImagePopup(true);
+  };
+
+  const closeImagePopup = () => {
+    setShowImagePopup(false);
+    setSelectedImage(null);
   };
 
   const isOwnerUser = user?.username === ownerUsername;
@@ -243,9 +256,9 @@ export default function Dashboard() {
         .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 0.5rem; }
         .media-card { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 12px 22px -8px rgba(0,0,0,0.08); border: 1px solid #e2efff; cursor: pointer; position: relative; transition: 0.2s; }
         .media-card:hover { transform: scale(1.01); border-color: #3b82f6; }
-        .media-preview { aspect-ratio: 1 / 1; background: #f2f6fe; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .media-preview { aspect-ratio: 1 / 1; background: #f2f6fe; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
         .media-preview img, .media-preview video { width: 100%; height: 100%; object-fit: cover; }
-        .privacy-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 30px; font-size: 0.7rem; color: white; }
+        .privacy-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 30px; font-size: 0.7rem; color: white; z-index: 2; }
         .media-info { padding: 0.8rem; }
         .media-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .media-date { font-size: 0.7rem; color: #6c757d; margin-top: 4px; }
@@ -314,8 +327,8 @@ export default function Dashboard() {
         ) : (
           <div className="media-grid">
             {filteredMedia().map(item => (
-              <div key={item._id || item.id} className="media-card" onClick={() => window.open(item.media_url, '_blank')}>
-                <div className="media-preview">
+              <div key={item._id || item.id} className="media-card">
+                <div className="media-preview" onClick={() => openImagePopup(item.media_url, item.description, item.username, item.uploaded_at)}>
                   {item.type === 'image' ? (
                     <img src={item.media_url} alt={item.description || 'Foto'} loading="lazy" />
                   ) : (
@@ -456,6 +469,81 @@ export default function Dashboard() {
             >
               Tutup
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP FOTO MODAL */}
+      {showImagePopup && selectedImage && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1002
+        }} onClick={closeImagePopup}>
+          <div style={{
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            background: 'white',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            position: 'relative'
+          }} onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={closeImagePopup}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'rgba(0,0,0,0.6)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                cursor: 'pointer',
+                color: 'white',
+                zIndex: 10
+              }}
+            >
+              ✕
+            </button>
+            <img 
+              src={selectedImage.url} 
+              alt={selectedImage.description || 'Foto'} 
+              style={{
+                maxWidth: '100%',
+                maxHeight: '80vh',
+                display: 'block',
+                margin: '0 auto'
+              }}
+              onError={(e) => {
+                e.target.src = 'https://placehold.co/600x400/2563eb/white?text=GAGAL+LOAD';
+              }}
+            />
+            <div style={{
+              padding: '16px',
+              background: 'white',
+              borderTop: '1px solid #eee'
+            }}>
+              <p style={{ marginBottom: '8px', color: '#333' }}>
+                <strong>📝 Deskripsi:</strong> {selectedImage.description || 'Tidak ada deskripsi'}
+              </p>
+              <p style={{ marginBottom: '4px', color: '#666', fontSize: '14px' }}>
+                <strong>👤 Uploader:</strong> @{selectedImage.username}
+              </p>
+              <p style={{ color: '#999', fontSize: '12px' }}>
+                📅 {new Date(selectedImage.uploadedAt).toLocaleString('id-ID')}
+              </p>
+            </div>
           </div>
         </div>
       )}
