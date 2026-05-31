@@ -17,10 +17,15 @@ export default function Dashboard() {
   const [uploadPrivacy, setUploadPrivacy] = useState('public');
   const [uploading, setUploading] = useState(false);
 
-  // DEFAULT VALUE - GA PERLU ENVIRONMENT VARIABLE!
-  const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
-  const appName = 'Zexzo Storage';  // ← LANGSUNG DI SET, GA PAKE ENV
+  // ============ BROADCAST POPUP STATE ============
+  const [broadcast, setBroadcast] = useState(null);
+  const [showBroadcast, setShowBroadcast] = useState(false);
 
+  // Ambil dari environment variable (AMAN)
+  const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
+  const appName = 'Zexzo Storage';
+
+  // Cek auth
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -39,6 +44,40 @@ export default function Dashboard() {
     });
     loadMedia();
   }, []);
+
+  // ============ CEK BROADCAST ============
+  useEffect(() => {
+    if (user?.username) {
+      checkBroadcast();
+    }
+  }, [user]);
+
+  const checkBroadcast = async () => {
+    try {
+      const res = await fetch(`/api/bot/broadcast?username=${user?.username}`);
+      const data = await res.json();
+      if (data.active && data.message && !data.alreadyShown) {
+        setBroadcast({ message: data.message, id: data.broadcastId });
+        setShowBroadcast(true);
+      }
+    } catch (error) {
+      console.error('Gagal ambil broadcast:', error);
+    }
+  };
+
+  const closeBroadcast = async () => {
+    if (broadcast?.id) {
+      await fetch('/api/bot/broadcast', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          broadcastId: broadcast.id, 
+          username: user?.username 
+        })
+      });
+    }
+    setShowBroadcast(false);
+  };
 
   const loadMedia = async () => {
     try {
@@ -345,6 +384,72 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* BROADCAST POPUP MODAL */}
+      {showBroadcast && broadcast && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            background: 'white',
+            maxWidth: '400px',
+            width: '90%',
+            borderRadius: '24px',
+            padding: '24px',
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={closeBroadcast}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#999'
+              }}
+            >
+              ✕
+            </button>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📢</div>
+            <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>
+              Pengumuman
+            </h3>
+            <p style={{ fontSize: '16px', color: '#666', lineHeight: '1.5', marginBottom: '20px' }}>
+              {broadcast.message}
+            </p>
+            <button
+              onClick={closeBroadcast}
+              style={{
+                background: '#2563eb',
+                color: 'white',
+                border: 'none',
+                padding: '10px 24px',
+                borderRadius: '40px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
