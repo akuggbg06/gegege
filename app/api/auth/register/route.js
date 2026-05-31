@@ -13,13 +13,11 @@ export async function POST(req) {
       return Response.json({ error: 'Password minimal 4 karakter, Bos!' }, { status: 400 });
     }
     
-    // Cek username exist
     const existingUser = await getUserByUsername(username);
     if (existingUser) {
       return Response.json({ error: 'Username udah dipake, Bos!' }, { status: 409 });
     }
     
-    // Cek email exist
     const existingEmail = await getUserByEmail(email);
     if (existingEmail) {
       return Response.json({ error: 'Email udah terdaftar, Bos!' }, { status: 409 });
@@ -30,19 +28,12 @@ export async function POST(req) {
     
     const token = createToken(userId.toString(), username);
     
-    // 🔧 PERBAIKAN UNTUK HTTPS: Secure flag WAJIB true, SameSite = None
-    const response = new Response(
-      JSON.stringify({ success: true, user: { username, email } }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Set-Cookie': `token=${token}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${7 * 24 * 60 * 60}`
-        }
-      }
-    );
-    
-    return response;
+    // 🔧 KIRIM TOKEN LEWAT JSON (BUKAN COOKIE)
+    return Response.json({ 
+      success: true, 
+      token: token,
+      user: { username, email } 
+    });
   } catch (error) {
     console.error('Register error:', error);
     return Response.json({ error: 'Terjadi kesalahan, coba lagi nanti, Bos!' }, { status: 500 });
