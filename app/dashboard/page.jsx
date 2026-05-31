@@ -474,7 +474,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* MEDIA POPUP MODAL (PREVIEW) */}
+            {/* MEDIA POPUP MODAL (PREVIEW + DOWNLOAD) */}
       {showMediaPopup && selectedMedia && (
         <div style={{
           position: 'fixed',
@@ -517,6 +517,33 @@ export default function Dashboard() {
             >
               ✕
             </button>
+            
+            {/* TOMBOL DOWNLOAD */}
+            <a
+              href={selectedMedia.url}
+              download={selectedMedia.description || 'media'}
+              style={{
+                position: 'absolute',
+                bottom: '16px',
+                right: '16px',
+                background: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '40px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                zIndex: 10,
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              ⬇️ Download
+            </a>
+            
             {selectedMedia.type === 'video' ? (
               <video 
                 src={selectedMedia.url} 
