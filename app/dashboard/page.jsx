@@ -93,17 +93,42 @@ export default function Dashboard() {
   const loadMedia = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/media', {
+      
+      // Ambil media user sendiri
+      const userRes = await fetch('/api/media', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) {
-        const data = await res.json();
-        console.log('API Response:', data); // DEBUG
-        const allMedia = [...(data.images || []), ...(data.videos || [])];
-        console.log('All media:', allMedia); // DEBUG
+      
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        console.log('User media:', userData);
+        
+        // Ambil media publik dari semua user
+        const publicRes = await fetch('/api/public');
+        let publicData = { images: [], videos: [] };
+        
+        if (publicRes.ok) {
+          publicData = await publicRes.json();
+          console.log('Public media from all users:', publicData);
+        }
+        
+        // Ambil data dari response
+        const userImages = userData.images || [];
+        const userVideos = userData.videos || [];
+        const publicImages = publicData.images || [];
+        const publicVideos = publicData.videos || [];
+        
+        // Filter publik dari user lain (bukan milik user login)
+        const otherPublicImages = publicImages.filter(img => img.username !== user?.username);
+        const otherPublicVideos = publicVideos.filter(vid => vid.username !== user?.username);
+        
+        // Gabung semua media
+        const allImages = [...userImages, ...otherPublicImages];
+        const allVideos = [...userVideos, ...otherPublicVideos];
+        const allMedia = [...allImages, ...allVideos];
+        
+        console.log('Total media after merge:', allMedia);
         setMediaItems(allMedia);
-      } else {
-        console.error('Failed to load media, status:', res.status);
       }
     } catch (error) {
       console.error('Gagal load media:', error);
@@ -192,7 +217,6 @@ export default function Dashboard() {
     } else if (currentFilter === 'video') {
       filtered = filtered.filter(m => m.type === 'video');
     } else if (currentFilter === 'public') {
-      // TAMPILKAN SEMUA MEDIA PUBLIK DARI SEMUA USER
       filtered = filtered.filter(m => m.visibility === 'public');
     } else if (currentFilter === 'private') {
       filtered = filtered.filter(m => m.visibility === 'private' && m.username === user?.username);
