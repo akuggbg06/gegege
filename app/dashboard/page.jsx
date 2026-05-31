@@ -86,22 +86,25 @@ export default function Dashboard() {
   };
 
   const loadMedia = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/media', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const allMedia = [...(data.images || []), ...(data.videos || [])];
-        setMediaItems(allMedia);
-      }
-    } catch (error) {
-      console.error('Gagal load media:', error);
-    } finally {
-      setLoading(false);
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/media', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      console.log('Media loaded:', data); // Debugging
+      const allMedia = [...(data.images || []), ...(data.videos || [])];
+      setMediaItems(allMedia);
+    } else {
+      console.error('Gagal load media, status:', res.status);
     }
-  };
+  } catch (error) {
+    console.error('Gagal load media:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
