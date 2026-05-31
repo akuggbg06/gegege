@@ -22,7 +22,6 @@ export async function DELETE(req, { params }) {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'image';
     
-    // Panggil fungsi deleteMedia dari lib/db.js (sudah include hapus dari Telegram)
     const deleted = await deleteMedia(decoded.username, id, type);
     
     if (!deleted) {
