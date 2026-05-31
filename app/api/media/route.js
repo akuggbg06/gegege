@@ -6,16 +6,17 @@ export async function GET(req) {
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.split(' ')[1];
     
-    // Kalo ada token, ambil media user tersebut (termasuk publik milik sendiri)
+    // Cek token
     if (token) {
       const decoded = verifyToken(token);
       if (decoded) {
+        // Ambil media user yang login (termasuk publik miliknya sendiri)
         const media = await getUserMedia(decoded.username);
         return Response.json(media);
       }
     }
     
-    // Kalo gak ada token, ambil semua media publik
+    // Kalo gak ada token atau token invalid, ambil semua media publik dari semua user
     const publicMedia = await getPublicMedia();
     return Response.json(publicMedia);
   } catch (error) {
