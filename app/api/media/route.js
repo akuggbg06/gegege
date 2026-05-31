@@ -1,12 +1,12 @@
 import { verifyToken } from '@/lib/auth';
-import { getUserMedia, getAllMedia } from '@/lib/db';
+import { getUserMedia, getPublicMedia } from '@/lib/db';
 
 export async function GET(req) {
   try {
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.split(' ')[1];
     
-    // Kalo ada token, ambil media user tersebut
+    // Kalo ada token, ambil media user tersebut (termasuk publik milik sendiri)
     if (token) {
       const decoded = verifyToken(token);
       if (decoded) {
@@ -15,8 +15,8 @@ export async function GET(req) {
       }
     }
     
-    // Kalo gak ada token atau token invalid, ambil semua media publik
-    const publicMedia = await getAllMedia();
+    // Kalo gak ada token, ambil semua media publik
+    const publicMedia = await getPublicMedia();
     return Response.json(publicMedia);
   } catch (error) {
     console.error('Media API error:', error);
