@@ -17,7 +17,9 @@ export default function Dashboard() {
   const [uploadPrivacy, setUploadPrivacy] = useState('public');
   const [uploading, setUploading] = useState(false);
 
-  // Cek auth
+  // AMAN: Username owner diambil dari environment variable, GAK keliatan di GitHub!
+  const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || '';
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -112,9 +114,11 @@ export default function Dashboard() {
     }
   };
 
+  // AMAN: Perbandingan username pake variable dari env, GAK hardcode!
+  const isOwnerUser = user?.username === ownerUsername;
+
   const filteredMedia = () => {
     let filtered = [...mediaItems];
-    const isOwnerUser = user?.username === 'UdudEnak';
     
     if (currentFilter === 'photo') filtered = filtered.filter(m => m.type === 'image');
     if (currentFilter === 'video') filtered = filtered.filter(m => m.type === 'video');
@@ -128,7 +132,6 @@ export default function Dashboard() {
       }
     }
     
-    // Filter berdasarkan akses user
     if (!isOwnerUser) {
       filtered = filtered.filter(m => 
         m.visibility === 'public' || 
@@ -147,15 +150,13 @@ export default function Dashboard() {
     owner: mediaItems.filter(m => m.visibility === 'owner').length
   };
 
-  const isOwnerUser = user?.username === 'UdudEnak';
-
   const getEmptyState = () => {
     switch (currentFilter) {
       case 'photo': return { icon: '📸', title: 'Belum ada foto', text: 'Klik tombol + untuk upload foto' };
       case 'video': return { icon: '🎬', title: 'Belum ada video', text: 'Klik tombol + untuk upload video' };
       case 'public': return { icon: '🌍', title: 'Belum ada media publik', text: 'Upload media dengan status publik' };
       case 'private': return { icon: '🔒', title: 'Belum ada media pribadi', text: 'Upload media dengan status pribadi' };
-      case 'owner': return { icon: '👑', title: 'Belum ada kiriman ke owner', text: 'User bisa kirim media ke owner' };
+      case 'owner': return { icon: '👑', title: 'Belum ada kiriman', text: 'User bisa kirim media ke owner' };
       default: return { icon: '📭', title: 'Belum ada media', text: 'Klik tombol + untuk upload foto atau video' };
     }
   };
@@ -228,7 +229,7 @@ export default function Dashboard() {
 
       <div className="app-container">
         <div className="header-flex">
-          <div className="logo-area"><h1>Zexzo Storage <span>Gege</span></h1></div>
+          <div className="logo-area"><h1>{APP_NAME} <span>✨ v2.0</span></h1></div>
           <div className="user-panel">
             <div className="user-greeting"><i className="fas fa-user-astronaut"></i> {user?.username}</div>
             <button className="logout-btn" onClick={() => { localStorage.removeItem('token'); router.push('/login'); }}>Logout</button>
@@ -241,7 +242,7 @@ export default function Dashboard() {
           <div className="stat-card"><div className="stat-icon">🌍</div><div className="stat-number">{stats.public}</div><div className="stat-label">Publik</div></div>
           <div className="stat-card"><div className="stat-icon">🔒</div><div className="stat-number">{stats.private}</div><div className="stat-label">Pribadi</div></div>
           {isOwnerUser && (
-            <div className="stat-card"><div className="stat-icon">👑</div><div className="stat-number">{stats.owner}</div><div className="stat-label">Kiriman Owner</div></div>
+            <div className="stat-card"><div className="stat-icon">👑</div><div className="stat-number">{stats.owner}</div><div className="stat-label">Kiriman</div></div>
           )}
         </div>
 
@@ -252,7 +253,7 @@ export default function Dashboard() {
           <button className={`filter-btn ${currentFilter === 'public' ? 'active' : ''}`} onClick={() => setCurrentFilter('public')}>🌍 Publik</button>
           <button className={`filter-btn ${currentFilter === 'private' ? 'active' : ''}`} onClick={() => setCurrentFilter('private')}>🔒 Pribadi</button>
           {isOwnerUser && (
-            <button className={`filter-btn ${currentFilter === 'owner' ? 'active' : ''}`} onClick={() => setCurrentFilter('owner')}>👑 Kiriman Owner</button>
+            <button className={`filter-btn ${currentFilter === 'owner' ? 'active' : ''}`} onClick={() => setCurrentFilter('owner')}>👑 Kiriman</button>
           )}
         </div>
 
@@ -274,7 +275,7 @@ export default function Dashboard() {
                   )}
                 </div>
                 <div className="privacy-badge">
-                  {item.visibility === 'public' ? '🌍 Publik' : item.visibility === 'private' ? '🔒 Pribadi' : '👑 Kiriman Owner'}
+                  {item.visibility === 'public' ? '🌍 Publik' : item.visibility === 'private' ? '🔒 Pribadi' : '👑 Kiriman'}
                 </div>
                 <div className="media-info">
                   <div className="media-name">{item.description || (item.type === 'image' ? 'Foto' : 'Video')}</div>
@@ -287,7 +288,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-        <footer><i className="fas fa-database"></i> Zexzo Storage — aman & modern</footer>
+        <footer><i className="fas fa-database"></i> {APP_NAME} — aman & modern</footer>
       </div>
 
       <button className="floating-upload" onClick={() => setModalOpen(true)}>+</button>
