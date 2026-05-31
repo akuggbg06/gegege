@@ -23,7 +23,7 @@ export default function Login() {
       const data = await res.json();
       
       if (res.ok) {
-        // 🔧 PAKAI WINDOW.LOCATION, BOS!
+        localStorage.setItem('token', data.token);
         window.location.href = '/dashboard';
       } else {
         setError(data.error || 'Login gagal, Bos!');
