@@ -114,16 +114,28 @@ export default function Dashboard() {
 
   const filteredMedia = () => {
     let filtered = [...mediaItems];
+    const isOwnerUser = user?.username === 'UdudEnak';
+    
     if (currentFilter === 'photo') filtered = filtered.filter(m => m.type === 'image');
     if (currentFilter === 'video') filtered = filtered.filter(m => m.type === 'video');
     if (currentFilter === 'public') filtered = filtered.filter(m => m.visibility === 'public');
+    if (currentFilter === 'private') filtered = filtered.filter(m => m.visibility === 'private' && m.username === user?.username);
     if (currentFilter === 'owner') {
-      if (user?.username === 'UdudEnak') {
+      if (isOwnerUser) {
         filtered = filtered.filter(m => m.visibility === 'owner');
       } else {
         filtered = [];
       }
     }
+    
+    // Filter berdasarkan akses user
+    if (!isOwnerUser) {
+      filtered = filtered.filter(m => 
+        m.visibility === 'public' || 
+        (m.visibility === 'private' && m.username === user?.username)
+      );
+    }
+    
     return filtered;
   };
 
@@ -131,17 +143,19 @@ export default function Dashboard() {
     photos: mediaItems.filter(m => m.type === 'image').length,
     videos: mediaItems.filter(m => m.type === 'video').length,
     public: mediaItems.filter(m => m.visibility === 'public').length,
+    private: mediaItems.filter(m => m.visibility === 'private' && m.username === user?.username).length,
     owner: mediaItems.filter(m => m.visibility === 'owner').length
   };
 
-  const isOwner = user?.username === 'UdudEnak';
+  const isOwnerUser = user?.username === 'UdudEnak';
 
   const getEmptyState = () => {
     switch (currentFilter) {
       case 'photo': return { icon: '📸', title: 'Belum ada foto', text: 'Klik tombol + untuk upload foto' };
       case 'video': return { icon: '🎬', title: 'Belum ada video', text: 'Klik tombol + untuk upload video' };
       case 'public': return { icon: '🌍', title: 'Belum ada media publik', text: 'Upload media dengan status publik' };
-      case 'owner': return { icon: '🔒', title: 'Belum ada owner only', text: 'Upload media dengan status owner only' };
+      case 'private': return { icon: '🔒', title: 'Belum ada media pribadi', text: 'Upload media dengan status pribadi' };
+      case 'owner': return { icon: '👑', title: 'Belum ada kiriman ke owner', text: 'User bisa kirim media ke owner' };
       default: return { icon: '📭', title: 'Belum ada media', text: 'Klik tombol + untuk upload foto atau video' };
     }
   };
@@ -201,8 +215,10 @@ export default function Dashboard() {
         .form-group { margin: 1rem 0; }
         .form-group label { font-weight: 600; display: block; margin-bottom: 0.3rem; }
         input, select { width: 100%; padding: 0.8rem; border-radius: 1.2rem; border: 1px solid #cbd5e1; font-family: inherit; }
-        .radio-group { display: flex; gap: 1rem; margin-top: 0.4rem; }
-        .preview-image { width: 100%; border-radius: 1rem; margin-top: 0.5rem; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.4rem; }
+        .radio-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #f8fafc; border-radius: 2rem; cursor: pointer; }
+        .radio-option.selected { background: #2563eb; color: white; }
+        .preview-small { width: 120px; height: 120px; object-fit: cover; border-radius: 0.75rem; margin-top: 0.5rem; border: 2px solid #e2e8f0; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
         .btn { padding: 0.6rem 1.4rem; border-radius: 2rem; border: none; font-weight: 600; cursor: pointer; }
         .btn-primary { background: #2563eb; color: white; }
@@ -212,7 +228,7 @@ export default function Dashboard() {
 
       <div className="app-container">
         <div className="header-flex">
-          <div className="logo-area"><h1>Zexzo Storage <span>✨ v2.0</span></h1></div>
+          <div className="logo-area"><h1>Zexzo Storage <span>Gege</span></h1></div>
           <div className="user-panel">
             <div className="user-greeting"><i className="fas fa-user-astronaut"></i> {user?.username}</div>
             <button className="logout-btn" onClick={() => { localStorage.removeItem('token'); router.push('/login'); }}>Logout</button>
@@ -223,7 +239,10 @@ export default function Dashboard() {
           <div className="stat-card"><div className="stat-icon">📸</div><div className="stat-number">{stats.photos}</div><div className="stat-label">Foto</div></div>
           <div className="stat-card"><div className="stat-icon">🎬</div><div className="stat-number">{stats.videos}</div><div className="stat-label">Video</div></div>
           <div className="stat-card"><div className="stat-icon">🌍</div><div className="stat-number">{stats.public}</div><div className="stat-label">Publik</div></div>
-          <div className="stat-card"><div className="stat-icon">🔒</div><div className="stat-number">{stats.owner}</div><div className="stat-label">Owner Only</div></div>
+          <div className="stat-card"><div className="stat-icon">🔒</div><div className="stat-number">{stats.private}</div><div className="stat-label">Pribadi</div></div>
+          {isOwnerUser && (
+            <div className="stat-card"><div className="stat-icon">👑</div><div className="stat-number">{stats.owner}</div><div className="stat-label">Kiriman Owner</div></div>
+          )}
         </div>
 
         <div className="filter-tabs">
@@ -231,8 +250,9 @@ export default function Dashboard() {
           <button className={`filter-btn ${currentFilter === 'photo' ? 'active' : ''}`} onClick={() => setCurrentFilter('photo')}>📸 Foto</button>
           <button className={`filter-btn ${currentFilter === 'video' ? 'active' : ''}`} onClick={() => setCurrentFilter('video')}>🎬 Video</button>
           <button className={`filter-btn ${currentFilter === 'public' ? 'active' : ''}`} onClick={() => setCurrentFilter('public')}>🌍 Publik</button>
-          {isOwner && (
-            <button className={`filter-btn ${currentFilter === 'owner' ? 'active' : ''}`} onClick={() => setCurrentFilter('owner')}>🔒 Owner</button>
+          <button className={`filter-btn ${currentFilter === 'private' ? 'active' : ''}`} onClick={() => setCurrentFilter('private')}>🔒 Pribadi</button>
+          {isOwnerUser && (
+            <button className={`filter-btn ${currentFilter === 'owner' ? 'active' : ''}`} onClick={() => setCurrentFilter('owner')}>👑 Kiriman Owner</button>
           )}
         </div>
 
@@ -253,11 +273,15 @@ export default function Dashboard() {
                     <video src={item.media_url} muted />
                   )}
                 </div>
-                <div className="privacy-badge">{item.visibility === 'public' ? '🌍 Publik' : '🔒 Owner'}</div>
+                <div className="privacy-badge">
+                  {item.visibility === 'public' ? '🌍 Publik' : item.visibility === 'private' ? '🔒 Pribadi' : '👑 Kiriman Owner'}
+                </div>
                 <div className="media-info">
                   <div className="media-name">{item.description || (item.type === 'image' ? 'Foto' : 'Video')}</div>
                   <div className="media-date">📅 {new Date(item.uploaded_at).toLocaleDateString('id-ID')}</div>
-                  <button className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(item._id || item.id, item.type); }}>🗑️ Hapus</button>
+                  {(item.username === user?.username || isOwnerUser) && (
+                    <button className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(item._id || item.id, item.type); }}>🗑️ Hapus</button>
+                  )}
                 </div>
               </div>
             ))}
@@ -281,21 +305,33 @@ export default function Dashboard() {
             <>
               <div className="form-group">
                 <label>Preview</label>
-                {uploadType === 'image' ? (
-                  <img src={uploadPreview} alt="Preview" className="preview-image" />
-                ) : (
-                  <video src={uploadPreview} controls className="preview-image" />
-                )}
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  {uploadType === 'image' ? (
+                    <img src={uploadPreview} alt="Preview" className="preview-small" />
+                  ) : (
+                    <video src={uploadPreview} controls className="preview-small" />
+                  )}
+                </div>
               </div>
               <div className="form-group">
-                <label>Deskripsi (opsional)</label>
-                <input type="text" placeholder="Judul atau deskripsi" value={uploadDescription} onChange={e => setUploadDescription(e.target.value)} />
+                <label>Deskripsi <span style={{ fontSize: '0.7rem', color: '#6c757d' }}>(opsional)</span></label>
+                <input type="text" placeholder="Tulis deskripsi di sini..." value={uploadDescription} onChange={e => setUploadDescription(e.target.value)} />
               </div>
               <div className="form-group">
                 <label>Privacy</label>
                 <div className="radio-group">
-                  <label><input type="radio" name="privacy" value="public" checked={uploadPrivacy === 'public'} onChange={() => setUploadPrivacy('public')} /> 🌍 Publik</label>
-                  <label><input type="radio" name="privacy" value="owner" checked={uploadPrivacy === 'owner'} onChange={() => setUploadPrivacy('owner')} /> 🔒 Owner Only</label>
+                  <label className={`radio-option ${uploadPrivacy === 'public' ? 'selected' : ''}`}>
+                    <input type="radio" name="privacy" value="public" checked={uploadPrivacy === 'public'} onChange={() => setUploadPrivacy('public')} style={{ width: 'auto', marginRight: '0.5rem' }} />
+                    🌍 Publik
+                  </label>
+                  <label className={`radio-option ${uploadPrivacy === 'private' ? 'selected' : ''}`}>
+                    <input type="radio" name="privacy" value="private" checked={uploadPrivacy === 'private'} onChange={() => setUploadPrivacy('private')} style={{ width: 'auto', marginRight: '0.5rem' }} />
+                    🔒 Pribadi
+                  </label>
+                  <label className={`radio-option ${uploadPrivacy === 'owner' ? 'selected' : ''}`}>
+                    <input type="radio" name="privacy" value="owner" checked={uploadPrivacy === 'owner'} onChange={() => setUploadPrivacy('owner')} style={{ width: 'auto', marginRight: '0.5rem' }} />
+                    👑 Kirim ke Owner
+                  </label>
                 </div>
               </div>
             </>
