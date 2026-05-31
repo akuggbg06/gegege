@@ -17,28 +17,25 @@ export default function Dashboard() {
   const [uploadPrivacy, setUploadPrivacy] = useState('public');
   const [uploading, setUploading] = useState(false);
 
+  // Cek auth
   useEffect(() => {
-    checkAuth();
-    loadMedia();
-  }, []);
-
-  const checkAuth = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
       return;
     }
-    const res = await fetch('/api/auth/me', {
+    fetch('/api/auth/me', {
       headers: { 'Authorization': `Bearer ${token}` }
+    }).then(res => {
+      if (!res.ok) {
+        localStorage.removeItem('token');
+        router.push('/login');
+      } else {
+        res.json().then(data => setUser(data.user));
+      }
     });
-    if (!res.ok) {
-      localStorage.removeItem('token');
-      router.push('/login');
-    } else {
-      const data = await res.json();
-      setUser(data.user);
-    }
-  };
+    loadMedia();
+  }, []);
 
   const loadMedia = async () => {
     try {
@@ -61,7 +58,6 @@ export default function Dashboard() {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
     if (!isImage && !isVideo) {
@@ -72,33 +68,25 @@ export default function Dashboard() {
       alert('Maksimal 50MB!');
       return;
     }
-
     setUploadFile(file);
     setUploadType(isImage ? 'image' : 'video');
-    const previewUrl = URL.createObjectURL(file);
-    setUploadPreview(previewUrl);
+    setUploadPreview(URL.createObjectURL(file));
   };
 
   const handleUpload = async () => {
-    if (!uploadFile) {
-      alert('Pilih file dulu!');
-      return;
-    }
-
+    if (!uploadFile) return;
     setUploading(true);
     const formData = new FormData();
     formData.append('file', uploadFile);
     formData.append('description', uploadDescription);
     formData.append('visibility', uploadPrivacy);
     formData.append('type', uploadType);
-
     const token = localStorage.getItem('token');
     const res = await fetch('/api/media/upload', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData
     });
-
     if (res.ok) {
       alert('Upload berhasil!');
       setModalOpen(false);
@@ -108,8 +96,7 @@ export default function Dashboard() {
       setUploadPrivacy('public');
       loadMedia();
     } else {
-      const error = await res.json();
-      alert('Upload gagal: ' + (error.error || 'Coba lagi'));
+      alert('Upload gagal!');
     }
     setUploading(false);
   };
@@ -125,17 +112,13 @@ export default function Dashboard() {
     }
   };
 
-  const handleViewMedia = (url) => {
-    window.open(url, '_blank');
-  };
-
   const filteredMedia = () => {
     let filtered = [...mediaItems];
     if (currentFilter === 'photo') filtered = filtered.filter(m => m.type === 'image');
     if (currentFilter === 'video') filtered = filtered.filter(m => m.type === 'video');
     if (currentFilter === 'public') filtered = filtered.filter(m => m.visibility === 'public');
     if (currentFilter === 'owner') {
-      if (isOwner) {
+      if (user?.username === 'UdudEnak') {
         filtered = filtered.filter(m => m.visibility === 'owner');
       } else {
         filtered = [];
@@ -153,8 +136,7 @@ export default function Dashboard() {
 
   const isOwner = user?.username === 'UdudEnak';
 
-  // Empty state messages berdasarkan filter
-  const getEmptyMessage = () => {
+  const getEmptyState = () => {
     switch (currentFilter) {
       case 'photo': return { icon: '📸', title: 'Belum ada foto', text: 'Klik tombol + untuk upload foto' };
       case 'video': return { icon: '🎬', title: 'Belum ada video', text: 'Klik tombol + untuk upload video' };
@@ -163,8 +145,7 @@ export default function Dashboard() {
       default: return { icon: '📭', title: 'Belum ada media', text: 'Klik tombol + untuk upload foto atau video' };
     }
   };
-
-  const emptyMsg = getEmptyMessage();
+  const emptyState = getEmptyState();
 
   if (loading) {
     return (
@@ -198,14 +179,14 @@ export default function Dashboard() {
         .filter-btn:not(.active):hover { background: #e0edff; }
         .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 0.5rem; }
         .media-card { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 12px 22px -8px rgba(0,0,0,0.08); border: 1px solid #e2efff; cursor: pointer; position: relative; transition: 0.2s; }
-        .media-card:hover { transform: scale(1.01); border-color: #3b82f6; box-shadow: 0 20px 25px -12px #2563eb30; }
+        .media-card:hover { transform: scale(1.01); border-color: #3b82f6; }
         .media-preview { aspect-ratio: 1 / 1; background: #f2f6fe; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .media-preview img, .media-preview video { width: 100%; height: 100%; object-fit: cover; }
-        .privacy-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; color: white; z-index: 2; }
+        .privacy-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 4px 8px; border-radius: 30px; font-size: 0.7rem; color: white; }
         .media-info { padding: 0.8rem; }
-        .media-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-        .media-date { font-size: 0.7rem; color: #6c757d; margin-bottom: 8px; }
-        .delete-btn { width: 100%; padding: 6px; background: #fee2e2; border: none; border-radius: 20px; color: #ef4444; font-size: 0.7rem; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .media-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .media-date { font-size: 0.7rem; color: #6c757d; margin-top: 4px; }
+        .delete-btn { width: 100%; margin-top: 8px; padding: 6px; background: #fee2e2; border: none; border-radius: 20px; color: #ef4444; font-size: 0.7rem; cursor: pointer; }
         .delete-btn:hover { background: #fecaca; }
         .empty-state { text-align: center; padding: 3rem 1rem; background: #ffffffb3; border-radius: 2rem; border: 1px dashed #73a9ff; }
         .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
@@ -219,7 +200,7 @@ export default function Dashboard() {
         .modal-content h3 { font-size: 1.6rem; font-weight: 600; margin-bottom: 1rem; }
         .form-group { margin: 1rem 0; }
         .form-group label { font-weight: 600; display: block; margin-bottom: 0.3rem; }
-        input, select { width: 100%; padding: 0.8rem; borderRadius: '1.2rem', border: '1px solid #cbd5e1', fontFamily: 'inherit' }
+        input, select { width: 100%; padding: 0.8rem; border-radius: 1.2rem; border: 1px solid #cbd5e1; font-family: inherit; }
         .radio-group { display: flex; gap: 1rem; margin-top: 0.4rem; }
         .preview-image { width: 100%; border-radius: 1rem; margin-top: 0.5rem; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
@@ -257,15 +238,15 @@ export default function Dashboard() {
 
         {filteredMedia().length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">{emptyMsg.icon}</div>
-            <div className="empty-title">{emptyMsg.title}</div>
-            <div className="empty-text">{emptyMsg.text}</div>
+            <div className="empty-icon">{emptyState.icon}</div>
+            <div className="empty-title">{emptyState.title}</div>
+            <div className="empty-text">{emptyState.text}</div>
           </div>
         ) : (
           <div className="media-grid">
             {filteredMedia().map(item => (
-              <div key={item._id || item.id} className="media-card">
-                <div className="media-preview" onClick={() => handleViewMedia(item.media_url)}>
+              <div key={item._id || item.id} className="media-card" onClick={() => window.open(item.media_url, '_blank')}>
+                <div className="media-preview">
                   {item.type === 'image' ? (
                     <img src={item.media_url} alt={item.description || 'Foto'} loading="lazy" />
                   ) : (
@@ -276,7 +257,7 @@ export default function Dashboard() {
                 <div className="media-info">
                   <div className="media-name">{item.description || (item.type === 'image' ? 'Foto' : 'Video')}</div>
                   <div className="media-date">📅 {new Date(item.uploaded_at).toLocaleDateString('id-ID')}</div>
-                  <button className="delete-btn" onClick={() => handleDelete(item._id || item.id, item.type)}>🗑️ Hapus</button>
+                  <button className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(item._id || item.id, item.type); }}>🗑️ Hapus</button>
                 </div>
               </div>
             ))}
