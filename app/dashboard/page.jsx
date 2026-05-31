@@ -29,7 +29,7 @@ export default function Dashboard() {
   const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
   const appName = 'Zexzo Storage';
 
-  // ============ CEK AUTH & LOAD MEDIA ============
+  // ============ CEK AUTH ============
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -89,25 +89,28 @@ export default function Dashboard() {
     setShowBroadcast(false);
   };
 
+  // ============ LOAD MEDIA ============
   const loadMedia = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/media', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      // Gabungkan images dan videos dari response
-      const allMedia = [...(data.images || []), ...(data.videos || [])];
-      console.log('All media loaded:', allMedia); // Debug: cek isinya
-      setMediaItems(allMedia);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/media', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log('API Response:', data); // DEBUG
+        const allMedia = [...(data.images || []), ...(data.videos || [])];
+        console.log('All media:', allMedia); // DEBUG
+        setMediaItems(allMedia);
+      } else {
+        console.error('Failed to load media, status:', res.status);
+      }
+    } catch (error) {
+      console.error('Gagal load media:', error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Gagal load media:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -180,14 +183,20 @@ export default function Dashboard() {
 
   const isOwnerUser = user?.username === ownerUsername;
 
-  const filteredMedia = () => {
+  // ============ FILTER MEDIA ============
+  const getFilteredMedia = () => {
     let filtered = [...mediaItems];
     
-    if (currentFilter === 'photo') filtered = filtered.filter(m => m.type === 'image');
-    if (currentFilter === 'video') filtered = filtered.filter(m => m.type === 'video');
-    if (currentFilter === 'public') filtered = filtered.filter(m => m.visibility === 'public');
-    if (currentFilter === 'private') filtered = filtered.filter(m => m.visibility === 'private' && m.username === user?.username);
-    if (currentFilter === 'owner') {
+    if (currentFilter === 'photo') {
+      filtered = filtered.filter(m => m.type === 'image');
+    } else if (currentFilter === 'video') {
+      filtered = filtered.filter(m => m.type === 'video');
+    } else if (currentFilter === 'public') {
+      // TAMPILKAN SEMUA MEDIA PUBLIK DARI SEMUA USER
+      filtered = filtered.filter(m => m.visibility === 'public');
+    } else if (currentFilter === 'private') {
+      filtered = filtered.filter(m => m.visibility === 'private' && m.username === user?.username);
+    } else if (currentFilter === 'owner') {
       if (isOwnerUser) {
         filtered = filtered.filter(m => m.visibility === 'owner');
       } else {
@@ -195,30 +204,30 @@ export default function Dashboard() {
       }
     }
     
-    // User biasa cuma bisa lihat public + private miliknya sendiri
-    if (!isOwnerUser) {
-      filtered = filtered.filter(m => 
-        m.visibility === 'public' || 
-        (m.visibility === 'private' && m.username === user?.username)
-      );
-    }
-    
     return filtered;
   };
 
-  const stats = {
-    photos: mediaItems.filter(m => m.type === 'image').length,
-    videos: mediaItems.filter(m => m.type === 'video').length,
-    public: mediaItems.filter(m => m.visibility === 'public').length,
-    private: mediaItems.filter(m => m.visibility === 'private' && m.username === user?.username).length,
-    owner: mediaItems.filter(m => m.visibility === 'owner').length
+  // ============ STATISTIK ============
+  const getStats = () => {
+    const allMedia = mediaItems;
+    return {
+      photos: allMedia.filter(m => m.type === 'image').length,
+      videos: allMedia.filter(m => m.type === 'video').length,
+      public: allMedia.filter(m => m.visibility === 'public').length,
+      private: allMedia.filter(m => m.visibility === 'private' && m.username === user?.username).length,
+      owner: allMedia.filter(m => m.visibility === 'owner').length
+    };
   };
 
+  const stats = getStats();
+  const filteredMedia = getFilteredMedia();
+
+  // ============ EMPTY STATE ============
   const getEmptyState = () => {
     switch (currentFilter) {
       case 'photo': return { icon: '📸', title: 'Belum ada foto', text: 'Klik tombol + untuk upload foto' };
       case 'video': return { icon: '🎬', title: 'Belum ada video', text: 'Klik tombol + untuk upload video' };
-      case 'public': return { icon: '🌍', title: 'Belum ada media publik', text: 'Upload media dengan status publik' };
+      case 'public': return { icon: '🌍', title: 'Belum ada media publik', text: 'User lain bisa melihat media publikmu di sini' };
       case 'private': return { icon: '🔒', title: 'Belum ada media pribadi', text: 'Upload media dengan status pribadi' };
       case 'owner': return { icon: '👑', title: 'Belum ada kiriman', text: 'Kiriman dari user akan muncul di sini' };
       default: return { icon: '📭', title: 'Belum ada media', text: 'Klik tombol + untuk upload foto atau video' };
@@ -321,7 +330,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {filteredMedia().length === 0 ? (
+        {filteredMedia.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">{emptyState.icon}</div>
             <div className="empty-title">{emptyState.title}</div>
@@ -329,7 +338,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="media-grid">
-            {filteredMedia().map(item => (
+            {filteredMedia.map(item => (
               <div key={item._id || item.id} className="media-card">
                 <div className="media-preview" onClick={() => openMediaPopup(item.media_url, item.description, item.username, item.uploaded_at, item.type)}>
                   {item.type === 'image' ? (
@@ -476,7 +485,7 @@ export default function Dashboard() {
         </div>
       )}
 
-            {/* MEDIA POPUP MODAL (PREVIEW + DOWNLOAD) */}
+      {/* MEDIA POPUP MODAL (PREVIEW + DOWNLOAD) */}
       {showMediaPopup && selectedMedia && (
         <div style={{
           position: 'fixed',
@@ -520,10 +529,9 @@ export default function Dashboard() {
               ✕
             </button>
             
-            {/* TOMBOL DOWNLOAD */}
             <a
               href={selectedMedia.url}
-              download={selectedMedia.description || 'media'}
+              download
               style={{
                 position: 'absolute',
                 bottom: '16px',
