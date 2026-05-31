@@ -1,9 +1,8 @@
 import { verifyToken } from '@/lib/auth';
-import { saveMedia } from '@/lib/db';
+import { getCollection } from '@/lib/mongodb';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const STORAGE_GROUP_ID = process.env.STORAGE_GROUP_ID;
-const OWNER_ID = process.env.OWNER_ID;
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 export async function POST(req) {
@@ -30,33 +29,15 @@ export async function POST(req) {
       return Response.json({ error: 'Upload file dulu, Bos!' }, { status: 400 });
     }
     
+    // Upload ke Telegram
     const buffer = Buffer.from(await file.arrayBuffer());
     const blob = new Blob([buffer], { type: file.type });
     
     const uploadForm = new FormData();
+    uploadForm.append('chat_id', STORAGE_GROUP_ID);
+    uploadForm.append('photo', blob, file.name);
     
-    // Tentukan target pengiriman
-    let targetChatId;
-    if (visibility === 'owner') {
-      targetChatId = OWNER_ID;
-      uploadForm.append('chat_id', OWNER_ID);
-    } else {
-      targetChatId = STORAGE_GROUP_ID;
-      uploadForm.append('chat_id', STORAGE_GROUP_ID);
-    }
-    
-    const caption = `📝 *Deskripsi:* ${description || '-'}\n👤 *Diupload oleh:* @${decoded.username}\n🔒 *Visibilitas:* ${visibility === 'owner' ? '🔒 Owner Only' : '🌍 Public'}\n📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}`;
-    uploadForm.append('caption', caption);
-    uploadForm.append('parse_mode', 'Markdown');
-    
-    if (type === 'video') {
-      uploadForm.append('video', blob, file.name);
-    } else {
-      uploadForm.append('photo', blob, file.name);
-    }
-    
-    const endpoint = type === 'video' ? 'sendVideo' : 'sendPhoto';
-    const response = await fetch(`${TG_API}/${endpoint}`, {
+    const response = await fetch(`${TG_API}/sendPhoto`, {
       method: 'POST',
       body: uploadForm
     });
@@ -68,21 +49,27 @@ export async function POST(req) {
       return Response.json({ error: 'Gagal upload ke Telegram, Bos!' }, { status: 500 });
     }
     
-    let fileId, messageId, mediaUrl;
+    const messageId = result.result.message_id;
+    const fileId = result.result.photo[result.result.photo.length - 1].file_id;
+    const imageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileId}`;
     
-    if (type === 'video') {
-      fileId = result.result.video.file_id;
-      messageId = result.result.message_id;
-      mediaUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileId}`;
-    } else {
-      fileId = result.result.photo[result.result.photo.length - 1].file_id;
-      messageId = result.result.message_id;
-      mediaUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileId}`;
-    }
+    // Simpan ke MongoDB
+    const images = await getCollection('images');
+    await images.insertOne({
+      username: decoded.username,
+      user_id: decoded.userId,
+      image_url: imageUrl,
+      media_url: imageUrl,
+      file_id: fileId,
+      telegram_message_id: messageId,
+      description: description,
+      visibility: visibility,
+      type: 'image',
+      uploaded_at: new Date(),
+      is_deleted: false
+    });
     
-    await saveMedia(decoded.userId, decoded.username, fileId, messageId, mediaUrl, file.name, description, visibility, type, targetChatId);
-    
-    return Response.json({ success: true, mediaUrl, messageId, visibility });
+    return Response.json({ success: true, imageUrl, messageId });
   } catch (error) {
     console.error('Upload error:', error);
     return Response.json({ error: 'Terjadi kesalahan, Bos!' }, { status: 500 });
