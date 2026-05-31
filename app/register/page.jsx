@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Register() {
-  const router = useRouter();
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,20 +13,27 @@ export default function Register() {
     setLoading(true);
     setError('');
     
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    });
-    
-    const data = await res.json();
-    
-    if (res.ok) {
-      router.push('/dashboard');
-    } else {
-      setError(data.error || 'Register gagal, Bos!');
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        window.location.href = '/dashboard';
+      } else {
+        setError(data.error || 'Register gagal, Bos!');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Register error:', err);
+      setError('Terjadi kesalahan, coba lagi nanti, Bos!');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
