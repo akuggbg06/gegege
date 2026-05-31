@@ -20,15 +20,15 @@ export default function BroadcastBanner() {
   if (!broadcast || !visible) return null;
 
   return (
-    <div className="fixed top-16 left-0 right-0 bg-yellow-600/90 backdrop-blur-sm z-40">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+    <div className="fixed top-20 left-4 right-4 z-40 animate-fade-in">
+      <div className="glass bg-gradient-to-r from-purple-600/90 to-pink-600/90 rounded-xl p-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <span className="text-2xl">📢</span>
           <p className="text-sm font-medium">{broadcast.message}</p>
         </div>
         <button
           onClick={() => setVisible(false)}
-          className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-yellow-500/30 transition"
+          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 transition"
         >
           ✕
         </button>
