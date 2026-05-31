@@ -68,15 +68,19 @@ export default function Dashboard() {
   };
 
   const closeBroadcast = async () => {
-    if (broadcast?.id) {
-      await fetch('/api/bot/broadcast', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          broadcastId: broadcast.id, 
-          username: user?.username 
-        })
-      });
+    if (broadcast?.id && user?.username) {
+      try {
+        await fetch('/api/bot/broadcast', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            broadcastId: broadcast.id, 
+            username: user?.username 
+          })
+        });
+      } catch (error) {
+        console.error('Gagal close broadcast:', error);
+      }
     }
     setShowBroadcast(false);
   };
