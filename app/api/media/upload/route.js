@@ -3,6 +3,7 @@ import { saveMedia } from '@/lib/db';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const STORAGE_GROUP_ID = process.env.STORAGE_GROUP_ID;
+const OWNER_ID = process.env.OWNER_ID;
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 export async function POST(req) {
@@ -33,9 +34,21 @@ export async function POST(req) {
     const blob = new Blob([buffer], { type: file.type });
     
     const uploadForm = new FormData();
-    uploadForm.append('chat_id', STORAGE_GROUP_ID);
     
-    // Kirim sesuai tipe (foto atau video)
+    // Tentukan target pengiriman
+    let targetChatId;
+    if (visibility === 'owner') {
+      targetChatId = OWNER_ID;
+      uploadForm.append('chat_id', OWNER_ID);
+    } else {
+      targetChatId = STORAGE_GROUP_ID;
+      uploadForm.append('chat_id', STORAGE_GROUP_ID);
+    }
+    
+    const caption = `📝 *Deskripsi:* ${description || '-'}\n👤 *Diupload oleh:* @${decoded.username}\n🔒 *Visibilitas:* ${visibility === 'owner' ? '🔒 Owner Only' : '🌍 Public'}\n📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}`;
+    uploadForm.append('caption', caption);
+    uploadForm.append('parse_mode', 'Markdown');
+    
     if (type === 'video') {
       uploadForm.append('video', blob, file.name);
     } else {
@@ -51,6 +64,7 @@ export async function POST(req) {
     const result = await response.json();
     
     if (!result.ok) {
+      console.error('Telegram API error:', result);
       return Response.json({ error: 'Gagal upload ke Telegram, Bos!' }, { status: 500 });
     }
     
@@ -66,9 +80,9 @@ export async function POST(req) {
       mediaUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileId}`;
     }
     
-    await saveMedia(decoded.userId, decoded.username, fileId, messageId, mediaUrl, file.name, description, visibility, type);
+    await saveMedia(decoded.userId, decoded.username, fileId, messageId, mediaUrl, file.name, description, visibility, type, targetChatId);
     
-    return Response.json({ success: true, mediaUrl, messageId });
+    return Response.json({ success: true, mediaUrl, messageId, visibility });
   } catch (error) {
     console.error('Upload error:', error);
     return Response.json({ error: 'Terjadi kesalahan, Bos!' }, { status: 500 });
