@@ -1,28 +1,42 @@
-import { getUserByUsername } from '@/lib/db'
-import { verifyPassword, createToken } from '@/lib/auth'
+import { getUserByUsername } from '@/lib/db';
+import { verifyPassword, createToken } from '@/lib/auth';
 
 export async function POST(req) {
-  const { username, password } = await req.json();
-  
-  if (!username || !password) {
-    return Response.json({ error: 'Isi semua, kontol!' }, { status: 400 });
+  try {
+    const { username, password } = await req.json();
+    
+    if (!username || !password) {
+      return Response.json({ error: 'Isi semua, Bos!' }, { status: 400 });
+    }
+    
+    const user = await getUserByUsername(username);
+    
+    if (!user) {
+      return Response.json({ error: 'Username/password salah, Bos!' }, { status: 401 });
+    }
+    
+    const isValid = verifyPassword(password, user.password_hash);
+    if (!isValid) {
+      return Response.json({ error: 'Username/password salah, Bos!' }, { status: 401 });
+    }
+    
+    const token = createToken(user._id.toString(), username);
+    
+    // Buat response dengan cookie manual
+    const response = new Response(
+      JSON.stringify({ success: true, user: { username: user.username, email: user.email } }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
+        }
+      }
+    );
+    
+    return response;
+  } catch (error) {
+    console.error('Login error:', error);
+    return Response.json({ error: 'Terjadi kesalahan, coba lagi nanti, Bos!' }, { status: 500 });
   }
-  
-  const user = await getUserByUsername(username);
-  
-  if (!user || !verifyPassword(password, user.passwordHash)) {
-    return Response.json({ error: 'Username/password salah, babi!' }, { status: 401 });
-  }
-  
-  const token = createToken(username, username);
-  
-  const response = Response.json({ success: true, user: { username: user.username, email: user.email } });
-  response.cookies.set('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60
-  });
-  
-  return response;
 }
