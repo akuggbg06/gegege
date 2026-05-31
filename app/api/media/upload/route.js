@@ -3,6 +3,7 @@ import { saveMedia } from '@/lib/db';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const STORAGE_GROUP_ID = process.env.STORAGE_GROUP_ID;
+const OWNER_ID = process.env.OWNER_ID; // ID Telegram BOS buat pribadi
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 export async function POST(req) {
@@ -33,10 +34,21 @@ export async function POST(req) {
     const blob = new Blob([buffer], { type: file.type });
     
     const uploadForm = new FormData();
-    uploadForm.append('chat_id', STORAGE_GROUP_ID);
     
-    // Buat caption yang informatif (SAMA KAYA KODE LAMA BOS!)
-    const caption = `📸 *Upload oleh:* @${decoded.username}\n📝 *Deskripsi:* ${description || '-'}\n🔒 *Visibilitas:* ${visibility === 'public' ? '🌍 Publik' : visibility === 'private' ? '🔒 Pribadi' : '👑 Kiriman Owner'}\n📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}`;
+    // TENTUKAN TUJUAN PENGIRIMAN
+    let targetChatId;
+    if (visibility === 'private') {
+      // PRIVATE: kirim ke chat pribadi BOS
+      targetChatId = OWNER_ID;
+      uploadForm.append('chat_id', OWNER_ID);
+    } else {
+      // PUBLIC: kirim ke grup storage
+      targetChatId = STORAGE_GROUP_ID;
+      uploadForm.append('chat_id', STORAGE_GROUP_ID);
+    }
+    
+    // Buat caption yang informatif
+    const caption = `📸 *Upload oleh:* @${decoded.username}\n📝 *Deskripsi:* ${description || '-'}\n🔒 *Visibilitas:* ${visibility === 'public' ? '🌍 Publik' : '🔒 Pribadi (Owner Only)'}\n📅 *Tanggal:* ${new Date().toLocaleString('id-ID')}`;
     uploadForm.append('caption', caption);
     uploadForm.append('parse_mode', 'Markdown');
     
@@ -60,13 +72,11 @@ export async function POST(req) {
       return Response.json({ error: 'Gagal upload ke Telegram, Bos!' }, { status: 500 });
     }
     
-    let fileId, messageId, mediaUrl, chatId;
+    let fileId, messageId, mediaUrl;
     
     if (type === 'video') {
       fileId = result.result.video.file_id;
       messageId = result.result.message_id;
-      chatId = result.result.chat.id;
-      // Dapatkan URL video yang benar
       const getFileRes = await fetch(`${TG_API}/getFile?file_id=${fileId}`);
       const getFileResult = await getFileRes.json();
       const filePath = getFileResult.result.file_path;
@@ -74,15 +84,13 @@ export async function POST(req) {
     } else {
       fileId = result.result.photo[result.result.photo.length - 1].file_id;
       messageId = result.result.message_id;
-      chatId = result.result.chat.id;
-      // Dapatkan URL foto yang benar
       const getFileRes = await fetch(`${TG_API}/getFile?file_id=${fileId}`);
       const getFileResult = await getFileRes.json();
       const filePath = getFileResult.result.file_path;
       mediaUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
     }
     
-    await saveMedia(decoded.userId, decoded.username, fileId, messageId, mediaUrl, file.name, description, visibility, type, chatId);
+    await saveMedia(decoded.userId, decoded.username, fileId, messageId, mediaUrl, file.name, description, visibility, type, targetChatId);
     
     return Response.json({ success: true, mediaUrl, messageId });
   } catch (error) {
