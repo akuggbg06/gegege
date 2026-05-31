@@ -14,6 +14,8 @@ export default function Login() {
     setError('');
     
     try {
+      console.log('1. Mencoba login dengan:', form.username);
+      
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -21,11 +23,26 @@ export default function Login() {
       });
       
       const data = await res.json();
+      console.log('2. Response server:', data);
       
-      if (res.ok) {
+      if (res.ok && data.token) {
+        console.log('3. Login sukses, menyimpan token...');
         localStorage.setItem('token', data.token);
-        window.location.href = '/dashboard';
+        
+        // Cek apakah token tersimpan
+        const savedToken = localStorage.getItem('token');
+        console.log('4. Token tersimpan:', savedToken ? 'YES' : 'NO');
+        
+        if (savedToken) {
+          console.log('5. Redirect ke dashboard...');
+          window.location.href = '/dashboard';
+        } else {
+          console.log('5. Token GAGAL tersimpan!');
+          setError('Gagal menyimpan token, coba lagi Bos!');
+          setLoading(false);
+        }
       } else {
+        console.log('3. Login gagal:', data.error);
         setError(data.error || 'Login gagal, Bos!');
         setLoading(false);
       }
