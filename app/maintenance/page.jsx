@@ -1,8 +1,25 @@
 'use client';
 
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function MaintenancePage() {
+  const [countdown, setCountdown] = useState(5);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          window.location.href = '/';
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <div style={{
       minHeight: '100vh',
@@ -46,6 +63,13 @@ export default function MaintenancePage() {
           color: '#aaa'
         }}>
           Terima kasih atas pengertiannya 🙏
+        </p>
+        <p style={{
+          fontSize: '0.7rem',
+          color: '#ccc',
+          marginTop: '2rem'
+        }}>
+          Redirect ke halaman utama dalam {countdown} detik...
         </p>
       </div>
     </div>
