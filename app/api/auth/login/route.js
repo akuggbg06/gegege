@@ -22,14 +22,14 @@ export async function POST(req) {
     
     const token = createToken(user._id.toString(), username);
     
-    // 🔧 PERBAIKAN: Set cookie dengan cara yang lebih kompatibel
+    // 🔧 PERBAIKAN UNTUK HTTPS: Secure flag WAJIB true, SameSite = None
     const response = new Response(
       JSON.stringify({ success: true, user: { username: user.username, email: user.email } }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Set-Cookie': `token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Secure=${process.env.NODE_ENV === 'production'}`
+          'Set-Cookie': `token=${token}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${7 * 24 * 60 * 60}`
         }
       }
     );
