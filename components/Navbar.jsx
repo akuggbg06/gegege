@@ -7,8 +7,8 @@ export default function Navbar({ user }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+  const handleLogout = () => {
+    localStorage.removeItem('token');
     router.push('/login');
   };
 
@@ -36,7 +36,6 @@ export default function Navbar({ user }) {
           </button>
         </div>
         
-        {/* Mobile menu button */}
         <button 
           className="md:hidden text-white"
           onClick={() => setIsOpen(!isOpen)}
@@ -47,7 +46,6 @@ export default function Navbar({ user }) {
         </button>
       </div>
       
-      {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden mt-4 pt-4 border-t border-gray-700">
           <div className="flex flex-col gap-3">
