@@ -7,27 +7,35 @@ export default function ImageCard({ image, onDelete }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const handleDelete = async () => {
-    if (confirm('Yakin mau hapus foto ini, Bos?')) {
+    if (confirm(`Yakin mau hapus foto ini, Bos?`)) {
       setDeleting(true);
-      await onDelete(image._id || image.id);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/media/${image._id || image.id}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        onDelete();
+      }
+      setDeleting(false);
     }
   };
 
-  const date = image.uploadedAt 
-    ? new Date(parseInt(image.uploadedAt)).toLocaleDateString('id-ID')
-    : new Date(image.uploaded_at).toLocaleDateString('id-ID');
+  const date = new Date(image.uploaded_at).toLocaleDateString('id-ID');
+  const visibilityIcon = image.visibility === 'public' ? '🌍' : '🔒';
+  const visibilityText = image.visibility === 'public' ? 'Public' : 'Owner Only';
 
   return (
-    <div className="glass-card overflow-hidden group animate-fade-in">
-      <div className="relative aspect-square overflow-hidden bg-gray-800">
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700 hover:border-purple-500 hover:scale-105 transition-all duration-300 group">
+      <div className="relative aspect-square bg-gray-900 overflow-hidden">
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
         <img
-          src={image.image_url || image.imageUrl}
-          alt={image.image_name || image.imageName || 'Foto'}
+          src={image.image_url}
+          alt={image.description || 'Foto'}
           className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
@@ -37,26 +45,28 @@ export default function ImageCard({ image, onDelete }) {
             setImageLoaded(true);
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-2 right-2 flex gap-1">
+          <span className="px-2 py-1 bg-black/70 rounded-lg text-xs flex items-center gap-1">
+            {visibilityIcon} {visibilityText}
+          </span>
+        </div>
       </div>
       
-      <div className="p-4">
-        <p className="text-sm text-gray-300 truncate font-medium">
-          {image.image_name || image.imageName || 'Untitled'}
-        </p>
-        <div className="flex justify-between items-center mt-2">
-          <p className="text-xs text-gray-500 flex items-center gap-1">
-            📅 {date}
-          </p>
+      <div className="p-3">
+        {image.description && (
+          <p className="text-sm text-gray-300 mb-2 line-clamp-2">{image.description}</p>
+        )}
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-gray-500 flex items-center gap-2">
+            <span>📸 Foto</span>
+            <span>📅 {date}</span>
+          </div>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-xs transition disabled:opacity-50 flex items-center gap-1"
+            className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-xs transition flex items-center gap-1"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            {deleting ? '...' : 'Hapus'}
+            🗑️ {deleting ? '...' : 'Hapus'}
           </button>
         </div>
       </div>
