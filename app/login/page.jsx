@@ -32,49 +32,89 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(145deg, #1e4a8a 0%, #0f2b4d 100%)',
-      fontFamily: "system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif"
+    <div style={{
+      position: 'relative',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      overflow: 'hidden'
     }}>
+      {/* VIDEO BACKGROUND */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }}
+      >
+        <source src="https://files.catbox.moe/t4osuc.mp4" type="video/mp4" />
+        {/* Fallback kalo video gak bisa load */}
+        Your browser does not support the video tag.
+      </video>
+      
+      {/* OVERLAY GELAP BIAR TEXT KELIHATAN */}
       <div style={{
-        background: 'white',
+        position: 'absolute',
+        top: 0,
+        left: 0,
         width: '100%',
-        maxWidth: '400px',
+        height: '100%',
+        background: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 1
+      }} />
+      
+      {/* CARD LOGIN - TRANSPARAN! */}
+      <div style={{
+        position: 'relative',
+        zIndex: 2,
+        background: 'rgba(255, 255, 255, 0.15)',
+        backdropFilter: 'blur(12px)',
         borderRadius: '28px',
         padding: '2.2rem 1.8rem',
-        boxShadow: '0 12px 28px rgba(0, 0, 0, 0.15)',
-        textAlign: 'center'
+        width: '100%',
+        maxWidth: '400px',
+        boxShadow: '0 12px 28px rgba(0, 0, 0, 0.3)',
+        border: '1px solid rgba(255, 255, 255, 0.2)'
       }}>
-        <div style={{ marginBottom: '1.2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{
             width: '56px',
             height: '56px',
-            background: '#2563eb',
+            background: 'rgba(255, 255, 255, 0.2)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto',
-            boxShadow: '0 4px 8px rgba(37, 99, 235, 0.2)'
+            border: '1px solid rgba(255, 255, 255, 0.3)'
           }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '28px', height: '28px', color: 'white' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" style={{ width: '28px', height: '28px' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
+          <h2 style={{ fontSize: '1.8rem', fontWeight: '600', color: 'white', marginTop: '1rem', marginBottom: '0.3rem' }}>Welcome Back</h2>
+          <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.85rem' }}>Masukkan akun untuk melanjutkan</p>
         </div>
         
-        <h2 style={{ fontSize: '1.6rem', fontWeight: '600', color: '#0f2b4d', marginBottom: '0.3rem' }}>Welcome Back</h2>
-        <div style={{ color: '#6c757d', fontSize: '0.85rem', marginBottom: '1.8rem' }}>Masukkan akun untuk melanjutkan</div>
-        
         {error && (
-          <div style={{ background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '16px', padding: '0.75rem', marginBottom: '1rem', color: '#dc2626', fontSize: '0.85rem' }}>
+          <div style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '16px', padding: '0.75rem', marginBottom: '1rem', color: '#fecaca', fontSize: '0.85rem', textAlign: 'center' }}>
             {error}
           </div>
         )}
         
         <form onSubmit={handleSubmit}>
-          <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#1e3a8a', marginBottom: '0.5rem' }}>👤 Username</label>
+          <div style={{ marginBottom: '1.2rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '0.5rem' }}>👤 Username</label>
             <input
               type="text"
               value={form.username}
@@ -83,19 +123,21 @@ export default function Login() {
                 width: '100%',
                 padding: '0.85rem 1rem',
                 fontSize: '0.95rem',
-                border: '1.5px solid #e2e8f0',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
                 borderRadius: '16px',
-                background: '#f8fafc',
+                background: 'rgba(255, 255, 255, 0.1)',
                 outline: 'none',
+                color: 'white',
                 fontFamily: 'inherit'
               }}
               placeholder="Masukkan username"
+              placeholderTextColor="rgba(255,255,255,0.5)"
               required
             />
           </div>
           
-          <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#1e3a8a', marginBottom: '0.5rem' }}>🔒 Password</label>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '0.5rem' }}>🔒 Password</label>
             <input
               type="password"
               value={form.password}
@@ -104,10 +146,11 @@ export default function Login() {
                 width: '100%',
                 padding: '0.85rem 1rem',
                 fontSize: '0.95rem',
-                border: '1.5px solid #e2e8f0',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
                 borderRadius: '16px',
-                background: '#f8fafc',
+                background: 'rgba(255, 255, 255, 0.1)',
                 outline: 'none',
+                color: 'white',
                 fontFamily: 'inherit'
               }}
               placeholder="Masukkan password"
@@ -120,8 +163,8 @@ export default function Login() {
             disabled={loading}
             style={{
               width: '100%',
-              background: '#2563eb',
-              border: 'none',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
               padding: '0.85rem',
               borderRadius: '16px',
               fontSize: '1rem',
@@ -129,17 +172,24 @@ export default function Login() {
               color: 'white',
               cursor: 'pointer',
               fontFamily: 'inherit',
-              boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
+              transition: 'all 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.background = '#1d4ed8'}
-            onMouseLeave={(e) => e.target.style.background = '#2563eb'}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+            }}
           >
             {loading ? 'Loading...' : 'Login'}
           </button>
         </form>
         
-        <div style={{ marginTop: '1.5rem', fontSize: '0.7rem', color: '#94a3b8', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-          Belum punya akun? <Link href="/register" style={{ color: '#2563eb', textDecoration: 'none' }}>Daftar di sini</Link>
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', borderTop: '1px solid rgba(255, 255, 255, 0.2)', paddingTop: '1rem' }}>
+          Belum punya akun?{' '}
+          <Link href="/register" style={{ color: 'white', textDecoration: 'none', fontWeight: '500' }}>
+            Daftar di sini
+          </Link>
         </div>
       </div>
     </div>
