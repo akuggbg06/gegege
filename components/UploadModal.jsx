@@ -138,8 +138,8 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
             >
               <div className="text-5xl mb-3">📤</div>
               <p className="text-gray-300 mb-2">Drag & drop file di sini</p>
-              <p className="text-gray-500 text-sm">atau klik untuk browse</p>
-              <p className="text-gray-600 text-xs mt-3">Support: JPG, PNG, GIF, MP4, WebM (Max 50MB)</p>
+              <p className="text-gray-400 text-sm">atau klik untuk browse</p>
+              <p className="text-gray-500 text-xs mt-3">Support: JPG, PNG, GIF, MP4, WebM (Max 50MB)</p>
               <input
                 ref={fileInputRef}
                 type="file"
