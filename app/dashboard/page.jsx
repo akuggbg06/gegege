@@ -29,30 +29,35 @@ export default function Dashboard() {
   };
 
   const loadImages = async () => {
-    const res = await fetch('/api/images');
-    const data = await res.json();
-    setImages(data);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/images');
+      if (res.ok) {
+        const data = await res.json();
+        setImages(data);
+      }
+    } catch (error) {
+      console.error('Gagal load gambar:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpload = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    
     const res = await fetch('/api/images/upload', {
       method: 'POST',
-      body: formData
+      body: formData,
     });
-    
     if (res.ok) {
-      loadImages();
+      await loadImages();
     }
   };
 
   const handleDelete = async (imageId) => {
     const res = await fetch(`/api/images/${imageId}`, { method: 'DELETE' });
     if (res.ok) {
-      setImages(images.filter(img => img.id !== imageId));
+      setImages((prevImages) => prevImages.filter((img) => img._id !== imageId && img.id !== imageId));
     }
   };
 
@@ -71,7 +76,9 @@ export default function Dashboard() {
       
       <div className="container mx-auto px-4 py-20">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Galeri, Bos!</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Zexzo Storage
+          </h1>
           <p className="text-gray-400 mt-2">Total {images.length} foto</p>
         </div>
         
@@ -80,15 +87,21 @@ export default function Dashboard() {
             <p className="text-gray-400">Belum ada foto, Bos! Tekan tombol + buat upload</p>
           </div>
         ) : (
-          <div className="image-grid">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {images.map((img) => (
-              <ImageCard key={img.id} image={img} onDelete={handleDelete} />
+              <ImageCard key={img._id || img.id} image={img} onDelete={handleDelete} />
             ))}
           </div>
         )}
       </div>
       
       <FloatingUpload onUpload={handleUpload} />
+      
+      <footer className="text-center py-6 mt-8 border-t border-gray-800">
+        <p className="text-xs text-gray-500">
+          Copyright © Ai DeepSeek
+        </p>
+      </footer>
     </>
   );
 }
