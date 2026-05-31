@@ -388,4 +388,180 @@ export default function Dashboard() {
                     🌍 Publik
                   </label>
                   <label className={`radio-option ${uploadPrivacy === 'private' ? 'selected' : ''}`}>
-                    <
+                    <input type="radio" name="privacy" value="private" checked={uploadPrivacy === 'private'} onChange={() => setUploadPrivacy('private')} style={{ width: 'auto', marginRight: '0.5rem' }} />
+                    🔒 Pribadi
+                  </label>
+                  <label className={`radio-option ${uploadPrivacy === 'owner' ? 'selected' : ''}`}>
+                    <input type="radio" name="privacy" value="owner" checked={uploadPrivacy === 'owner'} onChange={() => setUploadPrivacy('owner')} style={{ width: 'auto', marginRight: '0.5rem' }} />
+                    👑 Kirim ke Owner
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
+          <div className="modal-actions">
+            <button className="btn btn-secondary" onClick={() => { setModalOpen(false); setUploadFile(null); setUploadPreview(null); setUploadDescription(''); setUploadPrivacy('public'); }}>Batal</button>
+            <button className="btn btn-primary" onClick={handleUpload} disabled={!uploadFile || uploading}>
+              {uploading ? 'Uploading...' : 'Upload'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* BROADCAST POPUP MODAL */}
+      {showBroadcast && broadcast && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            background: 'white',
+            maxWidth: '400px',
+            width: '90%',
+            borderRadius: '24px',
+            padding: '24px',
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={closeBroadcast}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#999'
+              }}
+            >
+              ✕
+            </button>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📢</div>
+            <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>
+              Pengumuman
+            </h3>
+            <p style={{ fontSize: '16px', color: '#666', lineHeight: '1.5', marginBottom: '20px' }}>
+              {broadcast.message}
+            </p>
+            <button
+              onClick={closeBroadcast}
+              style={{
+                background: '#2563eb',
+                color: 'white',
+                border: 'none',
+                padding: '10px 24px',
+                borderRadius: '40px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MEDIA POPUP MODAL (PREVIEW) */}
+      {showMediaPopup && selectedMedia && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1002
+        }} onClick={closeMediaPopup}>
+          <div style={{
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            background: 'white',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            position: 'relative'
+          }} onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={closeMediaPopup}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'rgba(0,0,0,0.6)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                cursor: 'pointer',
+                color: 'white',
+                zIndex: 10
+              }}
+            >
+              ✕
+            </button>
+            {selectedMedia.type === 'video' ? (
+              <video 
+                src={selectedMedia.url} 
+                controls 
+                autoPlay
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '80vh',
+                  display: 'block',
+                  margin: '0 auto'
+                }}
+              />
+            ) : (
+              <img 
+                src={selectedMedia.url} 
+                alt={selectedMedia.description || 'Foto'} 
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '80vh',
+                  display: 'block',
+                  margin: '0 auto'
+                }}
+                onError={(e) => {
+                  e.target.src = 'https://placehold.co/600x400/2563eb/white?text=GAGAL+LOAD';
+                }}
+              />
+            )}
+            <div style={{
+              padding: '16px',
+              background: 'white',
+              borderTop: '1px solid #eee'
+            }}>
+              <p style={{ marginBottom: '8px', color: '#333' }}>
+                <strong>📝 Deskripsi:</strong> {selectedMedia.description || 'Tidak ada deskripsi'}
+              </p>
+              <p style={{ marginBottom: '4px', color: '#666', fontSize: '14px' }}>
+                <strong>👤 Uploader:</strong> @{selectedMedia.username}
+              </p>
+              <p style={{ color: '#999', fontSize: '12px' }}>
+                📅 {new Date(selectedMedia.uploadedAt).toLocaleString('id-ID')}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
