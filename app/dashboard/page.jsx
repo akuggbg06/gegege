@@ -21,11 +21,11 @@ export default function Dashboard() {
   const [broadcast, setBroadcast] = useState(null);
   const [showBroadcast, setShowBroadcast] = useState(false);
 
-  // ============ POPUP FOTO STATE ============
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [showImagePopup, setShowImagePopup] = useState(false);
+  // ============ POPUP MEDIA STATE ============
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [showMediaPopup, setShowMediaPopup] = useState(false);
 
-  // Ambil dari environment variable (AMAN)
+  // Ambil dari environment variable
   const ownerUsername = process.env.NEXT_PUBLIC_OWNER_USERNAME || 'UdudEnak';
   const appName = 'Zexzo Storage';
 
@@ -154,7 +154,7 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id, type) => {
-    if (confirm('Hapus media ini? Media juga akan dihapus dari grup Telegram!')) {
+    if (confirm('Hapus media ini? Media akan dihapus dari database dan Telegram!')) {
       const token = localStorage.getItem('token');
       const res = await fetch(`/api/media/${id}?type=${type}`, {
         method: 'DELETE',
@@ -166,14 +166,14 @@ export default function Dashboard() {
     }
   };
 
-  const openImagePopup = (imageUrl, description, username, uploadedAt) => {
-    setSelectedImage({ url: imageUrl, description, username, uploadedAt });
-    setShowImagePopup(true);
+  const openMediaPopup = (mediaUrl, description, username, uploadedAt, type) => {
+    setSelectedMedia({ url: mediaUrl, description, username, uploadedAt, type });
+    setShowMediaPopup(true);
   };
 
-  const closeImagePopup = () => {
-    setShowImagePopup(false);
-    setSelectedImage(null);
+  const closeMediaPopup = () => {
+    setShowMediaPopup(false);
+    setSelectedMedia(null);
   };
 
   const isOwnerUser = user?.username === ownerUsername;
@@ -193,6 +193,7 @@ export default function Dashboard() {
       }
     }
     
+    // User biasa cuma bisa lihat public + private miliknya sendiri
     if (!isOwnerUser) {
       filtered = filtered.filter(m => 
         m.visibility === 'public' || 
@@ -328,7 +329,7 @@ export default function Dashboard() {
           <div className="media-grid">
             {filteredMedia().map(item => (
               <div key={item._id || item.id} className="media-card">
-                <div className="media-preview" onClick={() => openImagePopup(item.media_url, item.description, item.username, item.uploaded_at)}>
+                <div className="media-preview" onClick={() => openMediaPopup(item.media_url, item.description, item.username, item.uploaded_at, item.type)}>
                   {item.type === 'image' ? (
                     <img src={item.media_url} alt={item.description || 'Foto'} loading="lazy" />
                   ) : (
@@ -387,166 +388,4 @@ export default function Dashboard() {
                     🌍 Publik
                   </label>
                   <label className={`radio-option ${uploadPrivacy === 'private' ? 'selected' : ''}`}>
-                    <input type="radio" name="privacy" value="private" checked={uploadPrivacy === 'private'} onChange={() => setUploadPrivacy('private')} style={{ width: 'auto', marginRight: '0.5rem' }} />
-                    🔒 Pribadi
-                  </label>
-                  <label className={`radio-option ${uploadPrivacy === 'owner' ? 'selected' : ''}`}>
-                    <input type="radio" name="privacy" value="owner" checked={uploadPrivacy === 'owner'} onChange={() => setUploadPrivacy('owner')} style={{ width: 'auto', marginRight: '0.5rem' }} />
-                    👑 Kirim ke Owner
-                  </label>
-                </div>
-              </div>
-            </>
-          )}
-          <div className="modal-actions">
-            <button className="btn btn-secondary" onClick={() => { setModalOpen(false); setUploadFile(null); setUploadPreview(null); setUploadDescription(''); setUploadPrivacy('public'); }}>Batal</button>
-            <button className="btn btn-primary" onClick={handleUpload} disabled={!uploadFile || uploading}>
-              {uploading ? 'Uploading...' : 'Upload'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* BROADCAST POPUP MODAL */}
-      {showBroadcast && broadcast && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001
-        }}>
-          <div style={{
-            background: 'white',
-            maxWidth: '400px',
-            width: '90%',
-            borderRadius: '24px',
-            padding: '24px',
-            textAlign: 'center',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-            position: 'relative'
-          }}>
-            <button
-              onClick={closeBroadcast}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '16px',
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#999'
-              }}
-            >
-              ✕
-            </button>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📢</div>
-            <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>
-              Pengumuman
-            </h3>
-            <p style={{ fontSize: '16px', color: '#666', lineHeight: '1.5', marginBottom: '20px' }}>
-              {broadcast.message}
-            </p>
-            <button
-              onClick={closeBroadcast}
-              style={{
-                background: '#2563eb',
-                color: 'white',
-                border: 'none',
-                padding: '10px 24px',
-                borderRadius: '40px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* POPUP FOTO MODAL */}
-      {showImagePopup && selectedImage && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1002
-        }} onClick={closeImagePopup}>
-          <div style={{
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            background: 'white',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-            position: 'relative'
-          }} onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={closeImagePopup}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '16px',
-                background: 'rgba(0,0,0,0.6)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '36px',
-                height: '36px',
-                fontSize: '20px',
-                cursor: 'pointer',
-                color: 'white',
-                zIndex: 10
-              }}
-            >
-              ✕
-            </button>
-            <img 
-              src={selectedImage.url} 
-              alt={selectedImage.description || 'Foto'} 
-              style={{
-                maxWidth: '100%',
-                maxHeight: '80vh',
-                display: 'block',
-                margin: '0 auto'
-              }}
-              onError={(e) => {
-                e.target.src = 'https://placehold.co/600x400/2563eb/white?text=GAGAL+LOAD';
-              }}
-            />
-            <div style={{
-              padding: '16px',
-              background: 'white',
-              borderTop: '1px solid #eee'
-            }}>
-              <p style={{ marginBottom: '8px', color: '#333' }}>
-                <strong>📝 Deskripsi:</strong> {selectedImage.description || 'Tidak ada deskripsi'}
-              </p>
-              <p style={{ marginBottom: '4px', color: '#666', fontSize: '14px' }}>
-                <strong>👤 Uploader:</strong> @{selectedImage.username}
-              </p>
-              <p style={{ color: '#999', fontSize: '12px' }}>
-                📅 {new Date(selectedImage.uploadedAt).toLocaleString('id-ID')}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
+                    <
